@@ -1,0 +1,149 @@
+---
+title: "An introduction to specr"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{An introduction to specr}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  #fig.path = "man/figures/README-",
+  out.width = "100%",
+  fig.retina = 2
+)
+```
+
+
+
+The following vignette is a more comprehensive version of the example on the homepage and exemplifies how to use the major functions of this package. Although using `specr` strictly speaking does not require any other package, we recommend to also load the `tidyverse` as it provides valuable functions for data wrangling and adapting outputs from `specr` functions. Furthermore, the `tidyverse` includes `ggplot2` which can be used to modify the layout of the plots. 
+
+```{r, message=F, warning = F}
+# Load libraries
+library(specr)
+library(tidyverse)
+```
+
+
+## 1. Check the data
+
+In order to understand what type of analytical choices exists, you need to understand your data set. In a first step, you should hence investigate your data closely.
+
+```{r, message=F, warning = F}
+# We have a look at the simulated data set that is included in the package
+head(example_data)
+
+# Summary of the data set
+summary(example_data)
+```
+
+There are several numeric variables. In this example, we assume that `x` represents independent variables, `y` represents dependent variables, `c` represents control variables, and `group` denotes potential grouping variables that can be used for subsetting the data. 
+
+## 2. Define analytical choices
+
+The next steps involves identifying possible analytical choices. This step involves an in-depth understanding of the research question and the model(s) that will be specified. In this case, we assume simply that `x` should be positively correlated with `y`. We can use the additional function `setup_specs()` to check how different analytical decisions create varying factorial designs.
+
+```{r, message=F, warning = F}
+setup_specs(y = c("y1"),               # We choose only one dependent variale
+            x = c("x1", "x2"),         # We are not sure which independent variable is better
+            model = c("lm"),           # We only estimate one type of model (linear model)
+            controls = c("c1", "c2"))  # We include two control variable 
+```
+
+The resulting data frame creates eight different specifications. `setup_specs()` can be used to check and understand how different analytical choices create specific combinations. Yet, this step is not mandatory. This helper function is used within the next function `run_specs()` that actually runs the specification analysis. 
+
+
+## 3. Define final analytical choices and run the analysis
+
+The main function of the package is `run_specs()`. We need to include our analytical choices as arguments (as they will be passed to `setup_specs()`.) Additionally, we need to provide the data and, if needed, we can also specify subsets that should be evaluated. 
+
+One type of analytical choice that could additionally affect the results refers to the type of model that is estimated. The function runs traditional linear regression models by default (i.e. when `model = "lm"` is provided as argument). However, customized model functions can be passed to the function, too. The only requirement is that the customized function has `formula` and `data` as argument names. The self-made function needs to be a model estimation function, that takes the formula and estimates the model based on the data. In `run_specs()`, the resulting object is passed to `broom::tidy()`, which can deal with a variety of model classes.
+
+```{r, message=F, warning = F}
+# specific model fitting function
+lm_gauss <- function(formula, data) {
+  glm(formula = formula, 
+      data = data, 
+      family = gaussian(link = "identity"))
+}
+
+# Run specification curve analysis
+results <- run_specs(df = example_data, 
+                     y = c("y1", "y2"), 
+                     x = c("x1", "x2"), 
+                     model = c("lm", "lm_gauss"), 
+                     controls = c("c1", "c2"), 
+                     subsets = list(group1 = unique(example_data$group1),
+                                    group2 = unique(example_data$group2)))
+
+# Check
+results
+```
+
+The resulting data frame includes relevant statistics for each of the estimated models. 
+
+We can now plot a simple decision tree to understand how our analytical choices lead to a large number of specifications.
+
+```{r, fig.height=6, fig.width=10, message=F, warning = F}
+plot_decisiontree(results, 
+                  legend = TRUE)
+```
+
+## 4. Investigate the specification curve
+
+The package includes a simple function `summarise_specs()` that allows to get a first summary of the results.
+
+```{r, message=F, warning = F}
+# basic summary of the entire specification curve
+summarise_specs(results)
+
+# summary by specific groups and  statistics
+summarise_specs(results,                         # result data frame
+                x, y,                            # grouping variables
+                stats = lst(median, min, max))   # specific functions
+
+# summary of another statistic
+summarise_specs(results, 
+                subsets,
+                var = p.value)
+```
+
+The output contains summary statistics such as the median, the median absolute deviation, ... as well as the number of observations that were used for each model. Bear in mind that due to subsetting or missing data, sample sizes can vary considerably which, in turn, affects the results (e.g., the p-value).
+
+However, in order to grasp how the different analytical choices affect the outcome of interest (in this case, the estimate refers to the unstandardized regression coefficient *b*), it is reasonable to plot a specification curve. The function `plot_specs()` to produces the typical visualization of the specification curve and how the analytical choices affected the obtained results. 
+
+```{r, fig.height=10, fig.width=10, message=F, warning = F}
+# Plot specification curve analysis
+plot_specs(results)
+```
+
+The resulting plot includes the ranked specification curve (A) and an overview about how the different analytical choices affect the estimate of interest (B). Red represents negative and significant effects (based on the chosen significance level, by default $\alpha = .05$). Blue represents positive and significant effects. Grey refers to non-significant effects. 
+
+Sometimes, it can be useful to check the influence of specific choices on the estimate of interest more precisely. We can use the function `plot_summary()` to produce respective boxplots.
+
+```{r, fig.height=7, fig.width=7, message=F, warning = F}
+plot_summary(results)
+```
+
+We can see that the dependent variable (`y`) produces the largest differences in the obtained estimates.
+
+## 5. Decompose the variance in the specification curve
+
+Finally, we can estimate how much variance in the specification curve is related to which analytical decisions. Therefore, we have to estimate a basic multilevel model without predictors and the analytical decisions as random effects (interactions could be included too). We then use the function `icc_specs()` to calculate a respective table or `plot_variance()` to visualize the distribution.
+
+```{r, fig.height=3.5, fig.width=8, message=F, warning = F}
+# Estimate multilevel model 
+library(lme4)
+model <- lmer(estimate ~ 1 + (1|x)  + (1|y) + (1|controls) + (1|subsets), data = results)
+
+# Get intra-class correlation
+icc_specs(model) %>%
+  mutate_if(is.numeric, round, 2)
+
+# Plot decomposition
+plot_variance(model)
+```
+
