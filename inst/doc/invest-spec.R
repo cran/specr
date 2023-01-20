@@ -7,28 +7,38 @@ knitr::opts_chunk$set(
   fig.retina = 2
 )
 
-## ---- message=F, warning = F--------------------------------------------------
+## ---- message = F, warning = F------------------------------------------------
+library(tidyverse)
 library(specr)
-library(dplyr)
-library(purrr)
-library(ggplot2)
 library(performance)
 
+## ---- message=F, warning = F--------------------------------------------------
+# Custom function
+tidy_new <- function(x) {
+  fit <- broom::tidy(x, conf.int = TRUE)
+  fit$res <- list(x)  # Store model object
+  return(fit)
+}
+
 # Run specification curve analysis
-results <- run_specs(df = example_data, 
-                     y = c("y1", "y2"), 
-                     x = c("x1", "x2"), 
-                     model = c("lm"), 
-                     controls = c("c1", "c2"), 
-                     subsets = list(group1 = unique(example_data$group1),
-                                    group2 = unique(example_data$group2)),
-                     keep.results = TRUE)
+specs <- setup(data = example_data, 
+               y = c("y1", "y2"), 
+               x = c("x1", "x2"), 
+               model = c("lm"),
+               controls = c("c1", "c2"),
+               subsets = list(group1 = unique(example_data$group1),  
+                              group2 = unique(example_data$group2)),
+               fun1 = tidy_new)
+
+results <- specr(specs)
 
 ## -----------------------------------------------------------------------------
 (y_models <- results %>%
+  as_tibble %>%
   filter(x == "x1", 
          controls == "c1 + c2",
-         subsets == "all"))
+         subsets == "all")) %>%
+  select(x:group2, estimate:res)
 
 ## -----------------------------------------------------------------------------
 y_models %>%
@@ -43,6 +53,7 @@ y_models %>%
 
 ## ---- fig.height=8, fig.width=10, message=F, warning = F----------------------
 r2_results <- results %>%
+  as_tibble %>%
   filter(subsets == "all") %>%
   mutate(r2 = map(res, r2), 
          r2 = map_dbl(r2, 1)) %>%

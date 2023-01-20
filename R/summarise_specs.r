@@ -1,6 +1,9 @@
 #' Summarise specifications
 #'
-#' This function allows to inspect results of the specification curves by returning a comparatively simple summary of the results. This summary can be produced for various specific analytical choices and customized summary functions.
+#' @description `r lifecycle::badge("deprecated")`
+#'    This function is deprecated because the new version of specr uses a new analytic framework.
+#'    In this framework, you can plot a similar figure simply by using the generic \code{plot()} function.
+#'    This function allows to inspect results of the specification curves by returning a comparatively simple summary of the results. This summary can be produced for various specific analytical choices and customized summary functions.
 #'
 #' @param df a data frame resulting from \code{run_specs()}.
 #' @param ... one or more grouping variables (e.g., subsets, controls,...) that denote the available analytical choices.
@@ -39,7 +42,8 @@
 #' # Unnamed vector instead of named list passed to `stats`
 #' summarise_specs(results,
 #'                 controls,
-#'                 stats = c(mean, median))
+#'                 stats = c(mean = mean,
+#'                           median = median))
 #'
 #' @seealso [plot_summary()] to visually investigate the affect of analytical choices.
 summarise_specs <- function(df,
@@ -49,6 +53,9 @@ summarise_specs <- function(df,
                                          q25 = function(x) quantile(x, prob = .25),
                                          q75 = function(x) quantile(x, prob = .75))) {
 
+
+  # Deprecation warning
+  lifecycle::deprecate_warn("1.0.0", "summarise_specs()", "summary.specr.object()")
 
   group_var <- enquos(...)
 
@@ -68,7 +75,7 @@ summarise_specs <- function(df,
        df %>%
          summary_specs,
        df %>%
-         dplyr::summarize(obs = median(.data$obs))
+         dplyr::summarize(obs = median(.data$fit_nobs))
      )
 
   } else {
@@ -79,7 +86,7 @@ summarise_specs <- function(df,
         summary_specs,
       df %>%
         dplyr::group_by(!!! group_var) %>%
-        dplyr::summarize(obs = median(.data$obs)),
+        dplyr::summarize(obs = median(.data$fit_nobs)),
       by = names_from_dots(...)
     )
   }

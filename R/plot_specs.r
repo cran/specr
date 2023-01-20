@@ -1,7 +1,14 @@
 #' Plot specification curve and analytical choices
 #'
-#' This function plots an entire visualization of the specification curve
-#' analysis. The function uses the entire [tibble][tibble::tibble-package] that is produced by \code{run_specs()} to create a standard visualization of the specification curve analysis. Alternatively, one can also pass two separately created \link[ggplot2]{ggplot} objects to the function. In this case, it simply combines them using \code{cowplot::plot_grid}. Significant results are highlighted (negative = red, positive = blue, grey = nonsignificant).
+#' @description `r lifecycle::badge("deprecated")`
+#'    This function is deprecated because the new version of specr uses a new analytic framework.
+#'    In this framework, you can plot a similar figure simply by using the generic \code{plot()}
+#'    function and adding the argument \code{type = "default"}.This function plots an entire visualization of the specification curve analysis.
+#'    The function uses the entire [tibble][tibble::tibble-package] that is produced by
+#'    \code{run_specs()} to create a standard visualization of the specification curve analysis.
+#'    Alternatively, one can also pass two separately created \link[ggplot2]{ggplot} objects
+#'    to the function. In this case, it simply combines them using \code{cowplot::plot_grid}.
+#'    Significant results are highlighted (negative = red, positive = blue, grey = nonsignificant).
 #'
 #' @param df a data frame resulting from \code{run_specs()}.
 #' @param plot_a a ggplot object resulting from \code{plot_curve()} (or \code{plot_choices()} respectively).
@@ -17,11 +24,6 @@
 #'   plotted.
 #' @param null Indicate what value represents the 'null' hypothesis (defaults to
 #'   zero).
-#' @param sample_perc numeric value denoting what percentage of the
-#'   specifications should be plotted. Needs to be strictly greater than 0 and smalle than 1.
-#'   Defaults to 1 (= all specifications). Drawing a sample from all
-#'   specification usually makes only sense of the number of specifications is
-#'   very large and one wants to simplify the visualization.
 #' @param ... additional arguments that can be passed to \code{plot_grid()}.
 #'
 #' @return a \link[ggplot2]{ggplot} object.
@@ -70,17 +72,12 @@ plot_specs <- function(df = NULL,
                        null = 0,
                        ci = TRUE,
                        ribbon = FALSE,
-                       sample_perc = 1,
                        ...) {
 
+  # Deprecation warning
+  lifecycle::deprecate_warn("1.0.0", "plot_specs()", "plot.specr.object()")
+
   if (!is.null(df)) {
-
-    if (sample_perc > 1 | sample_perc < 0) {
-      stop("`sample_n` must be greater than 0 and less than 1!")
-    }
-
-  # Draw sample
-  df <- dplyr::sample_n(df, size = sample_perc*nrow(df))
 
   # Create both plots
   plot_a <- plot_curve(df, ci = ci, ribbon = ribbon, desc = desc, null = null)

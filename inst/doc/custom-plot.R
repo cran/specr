@@ -1,70 +1,109 @@
-## ---- message = F, warnings = F-----------------------------------------------
+## ---- message = F, warning = F------------------------------------------------
+# Load packages
+library(tidyverse)
 library(specr)
-library(dplyr)
-library(ggplot2)
-library(cowplot)
 
-# run spec analysis
-results <- run_specs(example_data,
-                     y = c("y1", "y2"),
-                     x = c("x1", "x2"),
-                     model = "lm",
-                     controls = c("c1", "c2"),
-                     subset = list(group1 = unique(example_data$group1),
-                                   group2 = unique(example_data$group2)))
+# Setup specifications
+specs <- setup(data = example_data,
+               y = c("y1", "y2"),
+               x = c("x1", "x2"),
+               model = "lm",
+               controls = c("c1", "c2"),
+               subsets = list(group1 = c("young", "middle", "old"),
+                              group2 = c("female", "male")))
+
+# Summary of the specification setup
+summary(specs)
+
+## -----------------------------------------------------------------------------
+# Running specification curve analysis 
+results <- specr(specs)
 
 ## ---- message = F, warnings = F-----------------------------------------------
-summarise_specs(results)
+# Overall summary
+summary(results)
 
-summarise_specs(results, x)
+## ---- message = F, warnings = F-----------------------------------------------
+# Specific descriptive analysis of the curve, grouped by x and y
+summary(results, 
+        type = "curve", 
+        group = c("x", "y"))
 
-## ---- fig.height=10, fig.width=10, message=F, warning = F---------------------
-plot_specs(results)
+## ---- fig.height=8, fig.width=8, message=F, warning = F-----------------------
+plot(results)
 
-## ---- fig.height=10, fig.width=10, message=F, warning = F---------------------
-plot_specs(results, 
-           choices = c("x", "y", "controls", "subsets"),  # "model is not plotted
-           rel_heights = c(1, 2))                         # changing relative heights
+## ---- fig.height=8, fig.width=8, message=F, warning = F-----------------------
+# Customizing plot
+plot(results, 
+     choices = c("x", "y", "controls", # model is not plotted
+                 "group1", "group2"),  # subset split into original groups
+     rel_heights = c(.75, 2))          # changing relative heights
 
 # Investigating specific contrasts
-results %>%
-  mutate(group1 = ifelse(grepl("group1 = 0", subsets), "0", "1"),
-         group2 = ifelse(grepl("group2 = A", subsets), "A", "B & C")) %>%
-  plot_specs(choices = c("x", "y", "controls", "group1", "group2"))
+results$data <- results$data %>%
+  mutate(gender = ifelse(grepl("female", subsets), "female", 
+                         ifelse(grepl("male", subsets), "male", "all")))
 
-## ---- fig.height=10, fig.width=10, message=F, warning = F---------------------
+# New variable as "choice"
+plot(results, 
+     choices = c("x", "y", "gender"))
+
+## ---- fig.height=8, fig.width=8, message=F, warning = F-----------------------
 # Plot specification curve
-p1 <- plot_curve(results, 
-                 ci = FALSE, 
-                 ribbon = TRUE) +
+p1 <- plot(results, 
+           type = "curve",
+           ci = FALSE, 
+           ribbon = TRUE) +
   geom_hline(yintercept = 0, 
              linetype = "dashed", 
              color = "black") +
-  ylim(-8, 12) +
-  labs(x = "", y = "unstandarized regression coefficient") +
-  theme_half_open()
+  labs(x = "", y = "unstd. coefficients")
 
 # Plot choices
-p2 <- plot_choices(results, 
-                   choices = c("x", "y", "controls", "subsets")) +
-  labs(x = "specifications (ranked)") +
-  theme_half_open() +
-  theme(strip.text.x = element_blank())
+p2 <- plot(results, 
+           type = "choices",
+           choices = c("x", "y", "controls")) +
+  labs(x = "specifications (ranked)")
 
-# Combine plots
-plot_specs(plot_a = p1,
-           plot_b = p2,
-           labels = c("", ""),      # remove plot labels
-           rel_height = c(2, 2.5))  # adjust relative heights
+# Combine plots (see ?plot_grid for possible adjustments)
+plot_grid(p1, p2,
+          ncol = 1,           
+          align = "v",             # to align vertically
+          axis = "rbl",            # align axes
+          rel_heights = c(2, 2))   # adjust relative heights
 
-## ---- fig.height=10, fig.width=10, message=F, warning = F---------------------
-p3 <- plot_samplesizes(results) +
-  theme_half_open()
+## ---- fig.height=8.5, fig.width=8, message=F, warning = F---------------------
+p3 <- plot(results, type = "samplesizes") 
 
-# Combine via cowplot
+# Add to overall plot
 plot_grid(p1, p2, p3,
           ncol = 1,
           align = "v",
-          rel_heights = c(1.5, 2, 0.8),
-          axis = "rbl")
+          axis = "rbl",
+          rel_heights = c(1.5, 2, 0.8))
+
+## ---- message = F, warning = F------------------------------------------------
+# ALl choices
+plot(results, 
+     type = "boxplot") 
+
+# Specific choices and further adjustments
+plot(results, 
+     type = "boxplot", 
+     choices = c("x", "y", "controls")) +
+  scale_fill_brewer(palette = 4)
+
+plot(results, 
+     type = "boxplot",
+     choices = c("group1", "group2")) +
+  scale_fill_manual(values = c("steelblue", "darkred"))
+
+## -----------------------------------------------------------------------------
+results %>%
+  as_tibble %>%
+  ggplot(aes(x = group1, y = estimate, fill = group2)) +
+  geom_boxplot() +
+  scale_fill_brewer(palette = "Pastel1") +
+  theme_classic() +
+  labs(x = "age groups", fill = "gender")
 

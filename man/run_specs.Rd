@@ -11,6 +11,7 @@ run_specs(
   model = "lm",
   controls = NULL,
   subsets = NULL,
+  all.comb = FALSE,
   conf.level = 0.95,
   keep.results = FALSE
 )
@@ -28,6 +29,8 @@ run_specs(
 
 \item{subsets}{a named list that includes potential subsets that should be evaluated (see examples). Defaults to NULL.}
 
+\item{all.comb}{a logical value indicating what type of combinations of the control variables should be specified. Defaults to FALSE (i.e., none, all, and each individually). If this argument is set to TRUE, all possible combinations between the control variables are specified (see examples).}
+
 \item{conf.level}{the confidence level to use for the confidence interval. Must be strictly greater than 0 and less than 1. Defaults to .95, which corresponds to a 95 percent confidence interval.}
 
 \item{keep.results}{a logical value indicating whether the complete model object should be kept. Defaults to FALSE.}
@@ -36,6 +39,8 @@ run_specs(
 a \link[tibble:tibble-package]{tibble} that includes all specifications and a tidy summary of model components.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+This function was deprecated because the new version of specr uses different analytical framework. In this framework, you should use the function \code{\link[=setup]{setup()}} first and then run all specifications using \code{\link[=specr]{specr()}}.
 This is the central function of the package. It runs the specification curve analysis. It takes the data frame and vectors for analytical choices related to the dependent variable, the independent variable, the type of models that should be estimated, the set of covariates that should be included (none, each individually, and all together), as well as a named list of potential subsets. The function returns a tidy tibble which includes relevant model parameters for each specification. The function \link[broom]{tidy} is used to extract relevant model parameters. Exactly what tidy considers to be a model component varies across models but is usually self-evident.
 }
 \examples{

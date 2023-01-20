@@ -15,7 +15,6 @@ plot_specs(
   null = 0,
   ci = TRUE,
   ribbon = FALSE,
-  sample_perc = 1,
   ...
 )
 }
@@ -44,20 +43,21 @@ plotted.}
 \item{ribbon}{logical value indicating whether a ribbon instead should be
 plotted.}
 
-\item{sample_perc}{numeric value denoting what percentage of the
-specifications should be plotted. Needs to be strictly greater than 0 and smalle than 1.
-Defaults to 1 (= all specifications). Drawing a sample from all
-specification usually makes only sense of the number of specifications is
-very large and one wants to simplify the visualization.}
-
 \item{...}{additional arguments that can be passed to \code{plot_grid()}.}
 }
 \value{
 a \link[ggplot2]{ggplot} object.
 }
 \description{
-This function plots an entire visualization of the specification curve
-analysis. The function uses the entire \link[tibble:tibble-package]{tibble} that is produced by \code{run_specs()} to create a standard visualization of the specification curve analysis. Alternatively, one can also pass two separately created \link[ggplot2]{ggplot} objects to the function. In this case, it simply combines them using \code{cowplot::plot_grid}. Significant results are highlighted (negative = red, positive = blue, grey = nonsignificant).
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+This function is deprecated because the new version of specr uses a new analytic framework.
+In this framework, you can plot a similar figure simply by using the generic \code{plot()}
+function and adding the argument \code{type = "default"}.This function plots an entire visualization of the specification curve analysis.
+The function uses the entire \link[tibble:tibble-package]{tibble} that is produced by
+\code{run_specs()} to create a standard visualization of the specification curve analysis.
+Alternatively, one can also pass two separately created \link[ggplot2]{ggplot} objects
+to the function. In this case, it simply combines them using \code{cowplot::plot_grid}.
+Significant results are highlighted (negative = red, positive = blue, grey = nonsignificant).
 }
 \examples{
 # load additional library
