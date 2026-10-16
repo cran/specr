@@ -29,25 +29,26 @@ document.addEventListener('DOMContentLoaded', function(e) {
 </script>
 
 <style type="text/css">
-  code{white-space: pre-wrap;}
-  span.smallcaps{font-variant: small-caps;}
-  span.underline{text-decoration: underline;}
-  div.column{display: inline-block; vertical-align: top; width: 50%;}
-  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-  ul.task-list{list-style: none;}
-    </style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
 
 
 
 <style type="text/css">
-  code {
-    white-space: pre;
-  }
-  .sourceCode {
-    overflow: visible;
-  }
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
 </style>
 <style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
 pre > code.sourceCode { white-space: pre; position: relative; }
 pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
@@ -63,55 +64,54 @@ pre > code.sourceCode { white-space: pre-wrap; }
 pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
-  { counter-reset: source-line 0; }
+{ counter-reset: source-line 0; }
 pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
+{ position: relative; left: -4em; counter-increment: source-line; }
 pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-    color: #aaaaaa;
-  }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
 div.sourceCode
-  {   }
+{ }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
-
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
 </style>
 <script>
 // apply pandoc div.sourceCode style to pre.sourceCode instead
@@ -120,13 +120,20 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   for (var i = 0; i < sheets.length; i++) {
     if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
     try { var rules = sheets[i].cssRules; } catch (e) { continue; }
-    for (var j = 0; j < rules.length; j++) {
+    var j = 0;
+    while (j < rules.length) {
       var rule = rules[j];
       // check if there is a div.sourceCode rule
-      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -334,11 +341,11 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<p>A major improvement in version 0.3.0 of specr is that we can
+<p>A major improvement in version 1.0.0 of specr is that we can
 parallelize the computations, which can reduce fitting time. For this,
 specr uses functions from the package <a href="https://furrr.futureverse.org/">furrr</a>. I suggest to check out
-the website of the package for further information. To be to use
-relevant functions, we load the package furrr upfront.</p>
+the website of the package for further information. To be able to use
+the relevant functions, we load the package furrr upfront.</p>
 <p>Before we start to run some examples, bear in mind that using
 parallelization does not always mean that the computations are
 automatically faster. If the overall computation time is not very long,
@@ -346,77 +353,77 @@ using parallelization may even lead to a longer fitting process as
 setting up several “workers” (essentially setting up procedures on
 several cores) produces a considerable “overhead”. A true reduction in
 fitting time is thus only achieved when the data set is large, the
-number of specification are high, and the computed models are complex. I
+number of specifications is high, and the computed models are complex. I
 thus first simulate a comparatively large data set that allows to
 specify more than 1000 specifications.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load packages</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(specr)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(furrr)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Data generating function</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>generate_data <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">seed =</span> <span class="dv">42</span>, <span class="at">n =</span> <span class="fl">1e5</span>) {</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.na</span>(seed)) <span class="fu">set.seed</span>(seed)</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  dat <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">x1 =</span> <span class="fu">rnorm</span>(n),</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">x2 =</span> <span class="fu">rnorm</span>(n)<span class="sc">+</span> <span class="fl">0.9</span><span class="sc">*</span>x1,</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">x3 =</span> <span class="fu">rnorm</span>(n)<span class="sc">+</span> <span class="fl">0.9</span><span class="sc">*</span>x2,</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">x4 =</span> <span class="fu">rnorm</span>(n)<span class="sc">+</span> <span class="fl">0.9</span><span class="sc">*</span>x3,</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">y4 =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>), <span class="at">times =</span> n<span class="sc">/</span><span class="dv">2</span>),</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">y1 =</span> <span class="fu">rnorm</span>(n) <span class="sc">+</span> x1<span class="sc">*</span>.<span class="dv">1</span> <span class="sc">*</span> <span class="fl">0.9</span><span class="sc">*</span>y4,</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">y2 =</span> <span class="fu">rnorm</span>(n) <span class="sc">+</span> x1<span class="sc">*</span>.<span class="dv">2</span>,</span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">y3 =</span> <span class="fu">rnorm</span>(n) <span class="sc">+</span> x1<span class="sc">*</span>.<span class="dv">2</span> <span class="sc">+</span> <span class="sc">-</span><span class="fl">0.4</span><span class="sc">*</span>x2, </span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">c1 =</span> <span class="fu">rnorm</span>(n) <span class="sc">+</span> x1<span class="sc">*</span>.<span class="dv">3</span>,</span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">c2 =</span> <span class="fu">rnorm</span>(n),</span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">c3 =</span> <span class="fu">rnorm</span>(n) <span class="sc">+</span> <span class="fl">0.9</span><span class="sc">*</span>c1,</span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">c4 =</span> <span class="fu">rnorm</span>(n),</span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">group =</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;c&quot;</span>, <span class="st">&quot;d&quot;</span>, <span class="st">&quot;e&quot;</span>), n, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate very large data set (n = 50,000, 2 MB on disk)</span></span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">generate_data</span>(<span class="dv">9</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># Load packages</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(specr)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="fu">library</span>(furrr)</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="co"># Data generating function</span></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>generate_data <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">seed =</span> <span class="dv">42</span>, <span class="at">n =</span> <span class="fl">1e5</span>) {</span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.na</span>(seed)) <span class="fu">set.seed</span>(seed)</span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>  dat <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>    <span class="at">x1 =</span> <span class="fu">rnorm</span>(n),</span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a>    <span class="at">x2 =</span> <span class="fu">rnorm</span>(n)<span class="sc">+</span> <span class="fl">0.9</span><span class="sc">*</span>x1,</span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a>    <span class="at">x3 =</span> <span class="fu">rnorm</span>(n)<span class="sc">+</span> <span class="fl">0.9</span><span class="sc">*</span>x2,</span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a>    <span class="at">x4 =</span> <span class="fu">rnorm</span>(n)<span class="sc">+</span> <span class="fl">0.9</span><span class="sc">*</span>x3,</span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a>    <span class="at">y4 =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>), <span class="at">times =</span> n<span class="sc">/</span><span class="dv">2</span>),</span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a>    <span class="at">y1 =</span> <span class="fu">rnorm</span>(n) <span class="sc">+</span> x1<span class="sc">*</span>.<span class="dv">1</span> <span class="sc">*</span> <span class="fl">0.9</span><span class="sc">*</span>y4,</span>
+<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a>    <span class="at">y2 =</span> <span class="fu">rnorm</span>(n) <span class="sc">+</span> x1<span class="sc">*</span>.<span class="dv">2</span>,</span>
+<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a>    <span class="at">y3 =</span> <span class="fu">rnorm</span>(n) <span class="sc">+</span> x1<span class="sc">*</span>.<span class="dv">2</span> <span class="sc">+</span> <span class="sc">-</span><span class="fl">0.4</span><span class="sc">*</span>x2, </span>
+<span id="cb1-18"><a href="#cb1-18" tabindex="-1"></a>    <span class="at">c1 =</span> <span class="fu">rnorm</span>(n) <span class="sc">+</span> x1<span class="sc">*</span>.<span class="dv">3</span>,</span>
+<span id="cb1-19"><a href="#cb1-19" tabindex="-1"></a>    <span class="at">c2 =</span> <span class="fu">rnorm</span>(n),</span>
+<span id="cb1-20"><a href="#cb1-20" tabindex="-1"></a>    <span class="at">c3 =</span> <span class="fu">rnorm</span>(n) <span class="sc">+</span> <span class="fl">0.9</span><span class="sc">*</span>c1,</span>
+<span id="cb1-21"><a href="#cb1-21" tabindex="-1"></a>    <span class="at">c4 =</span> <span class="fu">rnorm</span>(n),</span>
+<span id="cb1-22"><a href="#cb1-22" tabindex="-1"></a>    <span class="at">group =</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;c&quot;</span>, <span class="st">&quot;d&quot;</span>, <span class="st">&quot;e&quot;</span>), n, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb1-23"><a href="#cb1-23" tabindex="-1"></a>  )</span>
+<span id="cb1-24"><a href="#cb1-24" tabindex="-1"></a>}</span>
+<span id="cb1-25"><a href="#cb1-25" tabindex="-1"></a></span>
+<span id="cb1-26"><a href="#cb1-26" tabindex="-1"></a><span class="co"># Generate very large data set (n = 100,000, 9.9 MB on disk)</span></span>
+<span id="cb1-27"><a href="#cb1-27" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">generate_data</span>(<span class="dv">9</span>)</span></code></pre></div>
 <div id="simple-parallelization-without-custom-functions" class="section level2">
 <h2>Simple parallelization without custom functions</h2>
-<p>If we use standard model fitting function (e.g., “lm”) that are
-included in the base package, parallelization is comparatively simple.
-We only need to load the package <code>furrr</code> and specify a “plan
-for how to resolve a future” (for more information see
+<p>If we use standard model fitting functions (e.g., “lm”) that are
+included in base R, parallelization is comparatively simple. We only
+need to load the package <code>furrr</code> and specify a “plan for how
+to resolve a future” (for more information see
 <code>?future::plan</code>). In this case, I am choosing
-<code>multisession</code> (resolve the computations separate R sessions
-running in the background on the same machine) and specify
+<code>multisession</code> (resolve the computations in separate R
+sessions running in the background on the same machine) and specify
 <code>workers = 4</code> so that it runs on 4 cores in parallel.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Setup of specifications (number of specs = 1152)</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>specs <span class="ot">&lt;-</span> <span class="fu">setup</span>(<span class="at">data =</span> dat,            </span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">y =</span> <span class="fu">c</span>(<span class="st">&quot;y1&quot;</span>, <span class="st">&quot;y2&quot;</span>, <span class="st">&quot;y3&quot;</span>),                    </span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">x =</span> <span class="fu">c</span>(<span class="st">&quot;x1&quot;</span>, <span class="st">&quot;x2&quot;</span>, <span class="st">&quot;x3&quot;</span>, <span class="st">&quot;x4&quot;</span>),               </span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">model =</span> <span class="fu">c</span>(<span class="st">&quot;lm&quot;</span>), </span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">controls =</span> <span class="fu">c</span>(<span class="st">&quot;c1&quot;</span>, <span class="st">&quot;c2&quot;</span>, <span class="st">&quot;c3&quot;</span>, <span class="st">&quot;c4&quot;</span>),</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">subsets =</span> <span class="fu">list</span>(<span class="at">group =</span> <span class="fu">unique</span>(dat<span class="sc">$</span>group)))   </span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Default: Sequential ---</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>results_simple <span class="ot">&lt;-</span> <span class="fu">specr</span>(specs)</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Parallel: Multisession (only works when `furrr` is loaded!)</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="fu">plan</span>(<span class="at">strategy =</span> multisession, <span class="at">workers =</span> <span class="dv">4</span>)</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>results_parall <span class="ot">&lt;-</span> <span class="fu">specr</span>(specs)</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Comparison</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Sequential: &quot;</span>, results_simple<span class="sc">$</span>time, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>,</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Parallel:   &quot;</span>, results_parall<span class="sc">$</span>time)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># Setup of specifications (number of specs = 1152)</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>specs <span class="ot">&lt;-</span> <span class="fu">setup</span>(<span class="at">data =</span> dat,            </span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>               <span class="at">y =</span> <span class="fu">c</span>(<span class="st">&quot;y1&quot;</span>, <span class="st">&quot;y2&quot;</span>, <span class="st">&quot;y3&quot;</span>),                    </span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>               <span class="at">x =</span> <span class="fu">c</span>(<span class="st">&quot;x1&quot;</span>, <span class="st">&quot;x2&quot;</span>, <span class="st">&quot;x3&quot;</span>, <span class="st">&quot;x4&quot;</span>),               </span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>               <span class="at">model =</span> <span class="fu">c</span>(<span class="st">&quot;lm&quot;</span>), </span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>               <span class="at">controls =</span> <span class="fu">c</span>(<span class="st">&quot;c1&quot;</span>, <span class="st">&quot;c2&quot;</span>, <span class="st">&quot;c3&quot;</span>, <span class="st">&quot;c4&quot;</span>),</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>               <span class="at">subsets =</span> <span class="fu">list</span>(<span class="at">group =</span> <span class="fu">unique</span>(dat<span class="sc">$</span>group)))   </span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co"># Default: Sequential ---</span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>results_simple <span class="ot">&lt;-</span> <span class="fu">specr</span>(specs)</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a><span class="co"># Parallel: Multisession (only works when `furrr` is loaded!)</span></span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a><span class="fu">plan</span>(<span class="at">strategy =</span> multisession, <span class="at">workers =</span> <span class="dv">4</span>)</span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>results_parall <span class="ot">&lt;-</span> <span class="fu">specr</span>(specs)</span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="co"># Comparison</span></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Sequential: &quot;</span>, results_simple<span class="sc">$</span>time, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>,</span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a>    <span class="st">&quot;Parallel:   &quot;</span>, results_parall<span class="sc">$</span>time)</span></code></pre></div>
 <pre><code>## Sequential:  57.227 sec elapsed 
 ## Parallel:    36.781 sec elapsed</code></pre>
 <p>As we can see, the default (sequential) computation took around a
 minute (57.227 sec elapsed) and the parallel computation about half a
 minute (36.781 sec elapsed).</p>
 <p>We have to acknowledge that even with this comparatively large data
-set and more than 1,000 specifications, the reduction in time not too
-much. Thus, parallelization only makes sense if you have a truly large
-data set and thousands of specifications <em>or</em> the type of model
-you are estimating takes a really long time (e.g., a complex structural
-equation model, a negative binomial model, etc.). The true power of
-parallelization furthermore only come into play if you are using a
-considerable number of cores.</p>
+set and more than 1,000 specifications, the reduction in time is not
+very large. Thus, parallelization only makes sense if you have a truly
+large data set and thousands of specifications <em>or</em> the type of
+model you are estimating takes a really long time (e.g., a complex
+structural equation model, a negative binomial model, etc.). The true
+power of parallelization furthermore only comes into play if you are
+using a considerable number of cores.</p>
 </div>
 <div id="parallelization-with-custom-functions-from-different-packages" class="section level2">
 <h2>Parallelization with custom functions from different packages</h2>
@@ -425,9 +432,9 @@ is passed to the different workers. This can be done by specifying so
 called <code>furrr_options</code>. We need to pass objects from the
 global environment (and potentially also packages) as shown below.
 Please note that we do not have to specify the “future plan” again,
-because have specified it already earlier in this session (see above).
-If we are unsure what plan is currently specified, we can simply run
-<code>plan()</code> and get some information about the current
+because we have specified it already earlier in this session (see
+above). If we are unsure what plan is currently specified, we can simply
+run <code>plan()</code> and get some information about the current
 setup.</p>
 <p>As computation can take a long time, it would be nice if we would see
 some kind of progress indication. This can easily be done by simply
@@ -435,37 +442,37 @@ adding the argument <code>.progress = TRUE</code> to
 <code>specr()</code>. This passes this argument to the
 <code>future_pmap()</code> function within <code>specr()</code> and
 prints a rudimentary progress bar during the fitting process.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Custom function</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>log_model <span class="ot">&lt;-</span> <span class="cf">function</span>(formula, data) {</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glm</span>(formula, data, <span class="at">family =</span> <span class="fu">binomial</span>())</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Setup specs</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>specs <span class="ot">&lt;-</span> <span class="fu">setup</span>(<span class="at">data =</span> dat,            </span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>               <span class="at">y =</span> <span class="fu">c</span>(<span class="st">&quot;y4&quot;</span>),                    </span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>               <span class="at">x =</span> <span class="fu">c</span>(<span class="st">&quot;x1&quot;</span>, <span class="st">&quot;x2&quot;</span>, <span class="st">&quot;x3&quot;</span>),               </span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>               <span class="at">model =</span> <span class="fu">c</span>(<span class="st">&quot;log_model&quot;</span>), </span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>               <span class="at">controls =</span> <span class="fu">c</span>(<span class="st">&quot;c1&quot;</span>, <span class="st">&quot;c2&quot;</span>),</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>               <span class="at">subsets =</span> <span class="fu">list</span>(<span class="at">group =</span> <span class="fu">unique</span>(dat<span class="sc">$</span>group)))   </span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Create furrr_options to be passed to specr() (only works if `furrr` is loaded)</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>opts <span class="ot">&lt;-</span> <span class="fu">furrr_options</span>(</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">globals =</span> <span class="fu">list</span>(<span class="at">log_model =</span> log_model)</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co"># What &quot;plan&quot; is currently specified?</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="fu">plan</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Custom function</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>log_model <span class="ot">&lt;-</span> <span class="cf">function</span>(formula, data) {</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="fu">glm</span>(formula, data, <span class="at">family =</span> <span class="fu">binomial</span>())</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>}</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co"># Setup specs</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>specs <span class="ot">&lt;-</span> <span class="fu">setup</span>(<span class="at">data =</span> dat,            </span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>               <span class="at">y =</span> <span class="fu">c</span>(<span class="st">&quot;y4&quot;</span>),                    </span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>               <span class="at">x =</span> <span class="fu">c</span>(<span class="st">&quot;x1&quot;</span>, <span class="st">&quot;x2&quot;</span>, <span class="st">&quot;x3&quot;</span>),               </span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>               <span class="at">model =</span> <span class="fu">c</span>(<span class="st">&quot;log_model&quot;</span>), </span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>               <span class="at">controls =</span> <span class="fu">c</span>(<span class="st">&quot;c1&quot;</span>, <span class="st">&quot;c2&quot;</span>),</span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>               <span class="at">subsets =</span> <span class="fu">list</span>(<span class="at">group =</span> <span class="fu">unique</span>(dat<span class="sc">$</span>group)))   </span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co"># Create furrr_options to be passed to specr() (only works if `furrr` is loaded)</span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a>opts <span class="ot">&lt;-</span> <span class="fu">furrr_options</span>(</span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a>  <span class="at">globals =</span> <span class="fu">list</span>(<span class="at">log_model =</span> log_model)</span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a>)</span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co"># What &quot;plan&quot; is currently specified?</span></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="fu">plan</span>()</span></code></pre></div>
 <pre><code>## multisession:
 ## - args: function (..., workers = 4, envir = parent.frame())
 ## - tweaked: TRUE
 ## - call: plan(strategy = multisession, workers = 4)</code></pre>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Run results</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>results_parall_2 <span class="ot">&lt;-</span> <span class="fu">specr</span>(specs, </span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                          <span class="at">.options =</span> opts,   <span class="co"># Pass ops to specr</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>                          <span class="at">.progress =</span> <span class="cn">TRUE</span>)  <span class="co"># To add progress bar (not shown in output)</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Summarize results</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(results_parall_2)</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># Run results</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>results_parall_2 <span class="ot">&lt;-</span> <span class="fu">specr</span>(specs, </span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>                          <span class="at">.options =</span> opts,   <span class="co"># Pass ops to specr</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>                          <span class="at">.progress =</span> <span class="cn">TRUE</span>)  <span class="co"># To add progress bar (not shown in output)</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="co"># Summarize results</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="fu">summary</span>(results_parall_2)</span></code></pre></div>
 <pre><code>## Results of the specification curve analysis
 ## -------------------
 ## Technical details:
@@ -503,7 +510,7 @@ prints a rudimentary progress bar during the fitting process.</p>
 many cores were used and how long the fitting process has taken.</p>
 <p>At the end of our analysis, it makes sense to explicitly close
 multisession workers by switching the plan back to sequential.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plan</span>(sequential)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">plan</span>(sequential)</span></code></pre></div>
 </div>
 
 

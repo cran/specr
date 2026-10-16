@@ -10,7 +10,7 @@ expand_covariate <- function(covariate) {
         "c",
         purrr::map(
           seq_along(covariate),
-          ~combn(covariate, .x, FUN = list))
+          ~utils::combn(covariate, .x, FUN = list))
       ) %>%
         purrr::map(~paste(.x, collapse = " + "))
     ) %>%
@@ -37,14 +37,38 @@ expand_covariate_simple <- function(covariate) {
   }
 }
 
-# Function to determine the method of parameter extraction
+# Rows of the data that belong to the subset of a specification. `spec` is one
+# row of the specification grid; `sub_cols` are its subset columns (factors, NA = all)
+spec_subset_mask <- function(spec, data, sub_cols) {
+
+  keep <- rep(TRUE, nrow(data))
+
+  for (column in sub_cols) {
+    value <- spec[[column]]
+    if (is.na(value)) next
+    keep <- keep & !is.na(data[[column]]) & data[[column]] == as.character(value)
+  }
+
+  keep
+}
+
+# Function to determine the method of parameter extraction. Note:
+# lean_model_function() (R/infer_curve.R) reads `f` and `fun1` from the
+# environment of the returned function, so keep these names
 tidy_model <- function(f, fun1, fun2) {
+
+  # Evaluate the arguments now, so that the returned function does not keep the
+  # calling environment (e.g., of setup() with the data) alive
+  force(f)
+  force(fun1)
+  force(fun2)
+
   function(...) {
     fit <- do.call(f, args=list(...))
     fit1 <- fun1(fit)
 
     if(is.null(fun2)) {
-      fit1 <- fit1 %>% mutate(fit_nobs = broom::glance(fit)$nobs)
+      fit1 <- fit1 %>% mutate(fit_nobs = tryCatch(stats::nobs(fit), error = function(e) NA))
       return(fit1)
     } else {
     fit2 <- fun2(fit)
@@ -55,34 +79,32 @@ tidy_model <- function(f, fun1, fun2) {
   }
 }
 
-# formats results
+# formats results (`group` and `var` are quosures)
 format_results <- function(df, var, group, null = 0, desc = FALSE) {
 
-  if(is.null(group)) {
-    if (isFALSE(desc)) {
-      df <- df %>%
-        dplyr::arrange(!! var)
-    } else {
-      df <- df %>%
-        dplyr::arrange(desc(!! var))
-    }
+  if (isFALSE(desc)) {
+    df <- df %>%
+      dplyr::arrange(!! group, !! var)
   } else {
-    if (isFALSE(desc)) {
-      df <- df %>%
-        dplyr::arrange(!! group, !! var)
-    } else {
-      df <- df %>%
-        dplyr::arrange(!! group, desc(!! var))
-    }
+    df <- df %>%
+      dplyr::arrange(!! group, dplyr::desc(!! var))
   }
 
+  # create rank variable and color significance (grey if there are no
+  # confidence intervals). seq_len(n()) instead of 1:nrow(df), because results
+  # can contain a column named `df` (e.g., lmerTest models, GitHub issue #48)
+  if (all(c("conf.low", "conf.high") %in% names(df))) {
+    df <- df %>%
+      dplyr::mutate(specifications = seq_len(dplyr::n()),
+                    color = case_when(conf.low > !! null ~ "#377eb8",
+                                      conf.high < !! null ~ "#e41a1c",
+                                      TRUE ~ "darkgrey"))
+  } else {
+    df <- df %>%
+      dplyr::mutate(specifications = seq_len(dplyr::n()),
+                    color = "darkgrey")
+  }
 
-  # create rank variable and color significance
-  df <- df %>%
-    dplyr::mutate(specifications = 1:nrow(df),
-                  color = case_when(conf.low > null ~ "#377eb8",
-                                    conf.high < null ~ "#e41a1c",
-                                    TRUE ~ "darkgrey"))
   return(df)
 }
 

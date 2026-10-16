@@ -4,15 +4,17 @@ knitr::opts_chunk$set(
   comment = "#>",
   #fig.path = "man/figures/README-",
   out.width = "100%",
-  fig.retina = 2
+  fig.retina = 2,
+  # Evaluate the code only if the suggested packages are installed
+  eval = requireNamespace("tidyverse", quietly = TRUE) && requireNamespace("performance", quietly = TRUE)
 )
 
-## ---- message = F, warning = F------------------------------------------------
+## ----message = F, warning = F-------------------------------------------------
 library(tidyverse)
 library(specr)
 library(performance)
 
-## ---- message=F, warning = F--------------------------------------------------
+## ----message=F, warning = F---------------------------------------------------
 # Custom function
 tidy_new <- function(x) {
   fit <- broom::tidy(x, conf.int = TRUE)
@@ -49,9 +51,9 @@ y_models %>%
 ## -----------------------------------------------------------------------------
 y_models %>%
   pull(res) %>% 
-  map(r2)       # r2 is include in the package "performance"
+  map(r2)       # r2 is included in the package "performance"
 
-## ---- fig.height=8, fig.width=10, message=F, warning = F----------------------
+## ----fig.height=8, fig.width=10, message=F, warning = F-----------------------
 r2_results <- results %>%
   as_tibble %>%
   filter(subsets == "all") %>%
@@ -72,6 +74,6 @@ r2_results %>%
   geom_line() +
   theme_minimal() +
   theme(strip.text = element_blank(),
-        axis.line = element_line("black", size = .5),
+        axis.line = element_line("black", linewidth = .5),
         axis.text = element_text(colour = "black"))
 

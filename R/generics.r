@@ -8,11 +8,12 @@
 #' @param object An object of class "specr.setup", usually, a result of a call to `setup`.
 #' @param digits The number of digits to use when printing the specification table.
 #' @param rows The number of rows of the specification tibble that should be printed.
-#' @param print.specs Logical value; if `TRUE`, a head of the specification tibble
-#'   is returned and printed.
+#' @param print.specs Logical value; if `TRUE`, the head of the specification tibble
+#'   is printed.
 #' @param ... further arguments passed to or from other methods (currently ignored).
 #'
-#' @return A printed summary of an object of class \code{specr.setup}.
+#' @return Prints a summary of an object of class \code{specr.setup} and returns
+#'   the object invisibly.
 #'
 #' @export
 #'
@@ -38,14 +39,14 @@ summary.specr.setup <- function(object,
   cat("Setup for the Specification Curve Analysis\n")
   cat("-------------------------------------------\n")
   cat("Class:                     ", class(object), "-- version:", as.character(utils::packageVersion("specr")), "\n")
-  cat("Number of specifications:  ", as.numeric(object$n_specs), "\n\n")
+  cat("Number of specifications:  ", nrow(object$specs), "\n\n")
 
 
   cat("Specifications:\n\n")
   cat("  Independent variable:    ", paste0(unique(object$x), collapse = ", "), "\n")
   cat("  Dependent variable:      ", paste0(unique(object$y), collapse = ", "), "\n")
   cat("  Models:                  ", paste0(unique(object$model), collapse = ", "), "\n")
-  cat("  Covariates:              ", sub("\\b1\\b", "1 (none)", paste0(unique(object$specs$controls), collapse = ", ")), "\n")
+  cat("  Covariates:              ", paste0(unique(object$specs$controls), collapse = ", "), "\n")
   cat("  Subsets analyses:        ", paste0(unique(object$specs$subsets), collapse = ", "), "\n\n")
 
 
@@ -56,19 +57,26 @@ summary.specr.setup <- function(object,
   if(isTRUE(print.specs)) {
   cat("\n\nHead of specifications table (first", rows, "rows):\n\n")
   object$specs %>%
-    select(-.data$model_function) %>%
+    select(-"model_function") %>%
     mutate_if(is.numeric, round, digits) %>%
-    utils::head(n = rows)
+    utils::head(n = rows) %>%
+    print
   }
+
+  invisible(object)
 }
 
 #' Print method for S3 class "specr.setup"
+#' @param x An object of class "specr.setup".
+#' @param ... further arguments passed to or from other methods (currently ignored).
+#' @return Prints the number of specifications and returns `x` invisibly.
 #' @keywords internal
 #' @export
 print.specr.setup <- function(x, ...) {
 
-  cat("Number of specifications: ", as.numeric(x$n_specs), "\n\n")
+  cat("Number of specifications: ", nrow(x$specs), "\n\n")
 
+  invisible(x)
 }
 
 #' Plot visualization of the specification setup
@@ -87,7 +95,7 @@ print.specr.setup <- function(x, ...) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' specs <- setup(data = example_data,
 #'    x = c("x1", "x2", "x3"),
 #'    y = c("y1", "y2"),
@@ -121,46 +129,26 @@ plot.specr.setup <- function(x,
     labs(x = "", y = "number of options")
 
   df <- x$specs %>%
-    select(.data$model, .data$x, .data$y, .data$controls, .data$subsets) %>%
+    select("model", "x", "y", "controls", "subsets") %>%
     arrange(.data$model, .data$x, .data$y, .data$controls, .data$subsets) %>%
-    mutate(start = "raw data") %>%
-    select(start, dplyr::everything()) %>%
+    mutate(start = "raw data", .before = 1) %>%
     mutate(x = paste0(.data$x, " & ", .data$model),
            y = paste0(.data$y, " & ", .data$x),
            controls = paste0(.data$controls, " & ", .data$y),
            subsets = paste0(.data$subsets, " & ", .data$controls))
 
-  # Create edges
-  edges_level1 <- df %>%
-    select(.data$start, .data$model) %>%
-    rename(from = .data$start, to = .data$model) %>%
-    unique %>%
-    mutate(decisions = "model")
-  edges_level2 <- df %>%
-    select(.data$model, .data$x) %>%
-    rename(from = .data$model, to = .data$x) %>%
-    unique %>%
-    mutate(decisions = "independent variable")
-  edges_level3 <- df %>%
-    select(.data$x, .data$y) %>%
-    rename(from = .data$x, to = .data$y) %>%
-    unique %>%
-    mutate(decisions = "dependent variable")
-  edges_level4 = df %>%
-    select(.data$y, .data$controls) %>%
-    rename(from = .data$y, to = .data$controls) %>%
-    mutate(decisions = "control variables")
-  edges_level5 <- df %>%
-    select(.data$controls, .data$subsets) %>%
-    rename(from = .data$controls, to = .data$subsets) %>%
-    mutate(decisions = "subsets")
+  # Create edges between successive levels of decisions
+  nodes <- c("start", "model", "x", "y", "controls", "subsets")
+  edge_labels <- c("model", "independent variable", "dependent variable",
+                   "control variables", "subsets")
 
-  # Combine edges
-  edge_list <- rbind(edges_level1,
-                     edges_level2,
-                     edges_level3,
-                     edges_level4,
-                     edges_level5)
+  edge_list <- purrr::map(seq_along(edge_labels), function(i) {
+    df %>%
+      select(from = all_of(nodes[i]), to = all_of(nodes[i + 1])) %>%
+      distinct() %>%
+      mutate(decisions = edge_labels[i])
+  }) %>%
+    bind_rows()
   # Plot edges
   p2 <- edge_list %>%
     graph_from_data_frame %>%
@@ -181,13 +169,19 @@ plot.specr.setup <- function(x,
 
 
 #' Return tibble from specr.setup object
+#' @param x An object of class "specr.setup".
+#' @param ... further arguments passed to [tibble::as_tibble()].
+#' @return A tibble with one row per specification.
 #' @keywords internal
 #' @export
 as_tibble.specr.setup <- function(x, ...) {
   as_tibble(x$specs, ...)
 }
 
-#' Return tibble from specr.setup object
+#' Return data.frame from specr.setup object
+#' @param x An object of class "specr.setup".
+#' @param ... further arguments passed to [as.data.frame()].
+#' @return A data frame with one row per specification.
 #' @keywords internal
 #' @export
 as.data.frame.specr.setup <- function(x, ...) {
@@ -196,21 +190,26 @@ as.data.frame.specr.setup <- function(x, ...) {
 
 #' Summarizing the Specification Curve Analysis
 #'
-#' `summary` method for class "specr". It provides a printed output including
-#'   technical details (e.g., cores used, duration of the fitting process, number
-#'   of specifications), a descriptive analysis of the overall specification curve,
-#'   a descriptive summary of the resulting sample sizes, and a head of the results.
+#' `summary` method for class "specr.object". With `type = "default"`, it provides
+#'   a printed output including technical details (e.g., cores used, duration of the
+#'   fitting process, number of specifications), a descriptive analysis of the overall
+#'   specification curve, a descriptive summary of the resulting sample sizes, and a
+#'   head of the results. With `type = "curve"`, it returns descriptive statistics of
+#'   the specification curve (overall or for groups of specifications).
 #'
-#' @param object An object of class "specr", usually resulting of a call to `specr`.
-#' @param type Different aspects can be summarized and printed. See details for alternative summaries
-#' @param group In combination with `what = "curve"`, provide a vector of one or more variables (e.g., subsets, controls,...) that denote the available analytic choices to group summary of the estimate.
-#' @param var In combination with `what = "curve"`, unquoted name of parameter to be summarized. Defaults to estimate.
+#' @param object An object of class "specr.object", usually resulting of a call to `specr`.
+#' @param type What should be summarized? Either `"default"` (printed summary of the
+#'   whole analysis) or `"curve"` (tibble with descriptive statistics of the curve).
+#' @param group In combination with `type = "curve"`, a character vector of one or more variables (e.g., "subsets", "controls",...) that denote the available analytic choices to group the summary of the estimate.
+#' @param var Unquoted name of the parameter to be summarized. Defaults to estimate.
 #' @param stats Named vector or named list of summary functions (individually defined summary functions can included). If it is not named, placeholders (e.g., "fn1") will be used as column names.
 #' @param digits The number of digits to use when printing the specification table.
 #' @param rows The number of rows of the specification tibble that should be printed.
 #' @param ... further arguments passed to or from other methods (currently ignored).
 #'
-#' @return A printed summary of an object of class \code{specr.object}.
+#' @return For `type = "default"`, a printed summary of an object of class
+#'   \code{specr.object}, which is returned invisibly. For `type = "curve"`, a tibble
+#'   with the descriptive statistics (and the median sample size `obs`, if available).
 #'
 #' @export
 #'
@@ -244,7 +243,7 @@ as.data.frame.specr.setup <- function(x, ...) {
 #'        stats = list(median = median,
 #'                     min = min,
 #'                     max = max))
-#' @seealso The function used to create the "specr.setup" object: `setup`.
+#' @seealso The function used to create the "specr.object" object: [specr()].
 summary.specr.object <- function(object,
                                  type = "default",
                                  group = NULL,
@@ -257,6 +256,10 @@ summary.specr.object <- function(object,
                                  ...){
 
   var <- enquo(var)
+  type <- match.arg(type, c("default", "curve"))
+
+  # Sample sizes are only available if extracted (see `fun2` in setup())
+  has_nobs <- "fit_nobs" %in% names(object$data)
 
   if(type == "default") {
 
@@ -274,7 +277,8 @@ summary.specr.object <- function(object,
     cat("Descriptive summary of the specification curve:\n\n")
 
     object$data %>%
-      summarize_at(vars(!! var), stats) %>%
+      mutate(.specr_var = !! var) %>%
+      summarize_at(".specr_var", stats) %>%
       as.data.frame %>%
       round(digits) %>%
       print(row.names = FALSE)
@@ -282,6 +286,7 @@ summary.specr.object <- function(object,
     cat("\n")
 
     # Head of the result table
+    if (has_nobs) {
     cat("Descriptive summary of sample sizes: \n\n")
     des2 <- object$data %>%
       summarize(median = median(.data$fit_nobs),
@@ -292,44 +297,64 @@ summary.specr.object <- function(object,
     print(des2, row.names = FALSE)
 
     cat("\n")
+    }
 
     # Head of the result table
     cat("Head of the specification results (first", rows, "rows): \n\n")
     object$data %>%
-      select(-.data$model_function, -.data$term) %>%
+      select(-"model_function", -"term") %>%
       mutate_if(is.numeric, round, digits) %>%
       utils::head(n = rows) %>%
       print
+
+    return(invisible(object))
   }
 
   if(type == "curve") {
 
     if (length(group) == 0) {
 
-      dplyr::bind_cols(
-        object$data %>%
-          summarize_at(vars(!! var), stats),
-        object$data %>%
-          dplyr::summarize(obs = median(.data$fit_nobs))
-      )
+      res <- object$data %>%
+        mutate(.specr_var = !! var) %>%
+        summarize_at(".specr_var", stats)
+
+      if (has_nobs) {
+        res <- dplyr::bind_cols(
+          res,
+          object$data %>%
+            dplyr::summarize(obs = median(.data$fit_nobs))
+        )
+      }
 
     } else {
 
-      dplyr::left_join(
-        object$data %>%
-          dplyr::group_by_at(group) %>%
-          summarize_at(vars(!! var), stats),
-        object$data %>%
-          dplyr::group_by_at(group) %>%
-          dplyr::summarize(obs = median(.data$fit_nobs)),
-        by = group
-      )
+      res <- object$data %>%
+        dplyr::group_by_at(group) %>%
+        mutate(.specr_var = !! var) %>%
+        summarize_at(".specr_var", stats) %>%
+        ungroup()
+
+      if (has_nobs) {
+        res <- dplyr::left_join(
+          res,
+          object$data %>%
+            dplyr::group_by_at(group) %>%
+            dplyr::summarize(obs = median(.data$fit_nobs)) %>%
+            ungroup(),
+          by = group
+        )
+      }
     }
+
+    return(res)
   }
 
 }
 
 #' Print method for S3 class "specr.object"
+#' @param x An object of class "specr.object".
+#' @param ... further arguments passed to or from other methods (currently ignored).
+#' @return Prints a short summary of the specification curve and returns `x` invisibly.
 #' @keywords internal
 #' @export
 print.specr.object <- function(x, ...) {
@@ -341,7 +366,7 @@ print.specr.object <- function(x, ...) {
   cat("Descriptive summary of the specification curve:\n\n")
 
   x$data %>%
-    summarize_at(vars(.data$estimate),
+    summarize_at("estimate",
                  list(median = median, mad = mad, min = min, max = max,
                       q25 = function(x) quantile(x, prob = .25),
                       q75 = function(x) quantile(x, prob = .75))) %>%
@@ -349,6 +374,7 @@ print.specr.object <- function(x, ...) {
     round(2) %>%
     print(row.names = FALSE)
 
+  invisible(x)
 }
 
 
@@ -369,13 +395,17 @@ print.specr.object <- function(x, ...) {
 #'   panel (lower part of the default plot) is plotted. If \code{type = "boxplot"},
 #'   an alternative visualization of differences between choices is plotted that
 #'   summarizes results per choice using box-and-whisker plot(s). If
+#'   \code{type = "variance"}, the variance of the estimates is decomposed into
+#'   the shares explained by the analytical choices (see `formula`). If
 #'   \code{type = "samplesizes"}, a barplot of sample sizes per specification is
 #'   plotted.  See examples for more information.
 #' @param var Which parameter should be plotted in the curve? Defaults to
 #'    \code{estimate}, but other parameters (e.g., p.value, fit_r.squared,...)
-#'    can be plotted too.
+#'    can be plotted too. Note that the confidence intervals (`ci`) and the colors
+#'    always refer to the estimate, so set `ci = FALSE` for other parameters.
 #' @param group Should the arrangement of the curve be grouped by a particular choice?
-#'    Defaults to NULL, but can be any of the present choices (e.g., x, y, controls...)
+#'    Defaults to NULL, but can be any of the present choices (e.g., x, y, controls...),
+#'    given unquoted (`group = x`) or as a string (`group = "x"`).
 #' @param choices A vector specifying which analytic choices should be plotted.
 #'     By default, all choices (x, y, model, controls, subsets) are plotted.
 #' @param labels Labels for the two parts of the plot
@@ -383,7 +413,8 @@ print.specr.object <- function(x, ...) {
 #' @param desc Logical value indicating whether the curve should the arranged in
 #'   a descending order. Defaults to FALSE.
 #' @param null Indicate what value represents the 'null' hypothesis (defaults to
-#'   zero).
+#'   zero). Specifications whose confidence intervals exclude this value are
+#'   highlighted (positive = blue, negative = red).
 #' @param ci Logical value indicating whether confidence intervals should be
 #'   plotted.
 #' @param ribbon Logical value indicating whether a ribbon instead should be
@@ -393,12 +424,15 @@ print.specr.object <- function(x, ...) {
 #'   formula is based on \code{lme4::lmer()} and thus looks something like, e.g.:
 #'   \code{"estimate ~ 1 + (1|x) + (1|y)"} (to estimate the amount of variance
 #'   explained by different independent `x` and dependent variables `y`). All other
-#'   choices are then subsumed under residual variance. By no formula is provided,
+#'   choices are then subsumed under residual variance. If no formula is provided,
 #'   all choices (x, y, model, controls, and subsets) that have more than one alternative
 #'   are included. See examples for further details.
 #' @param print In combination with \code{type = "variance"}, logical value indicating
 #'   whether the intra-class correlations (i.e., percentages of variance explained by
-#'   analstical choices) should be printed or not. Defaults to TRUE.
+#'   analytical choices) should be printed or not. Defaults to TRUE.
+#' @param choice_labels Where should the names of the analytical choices (x, y,
+#'   model, ...) be shown in the panel of choices (`type = "default"` or
+#'   `"choices"`)? Either `"right"` (default) or `"left"`, next to their options.
 #' @param ... further arguments passed to or from other methods (currently ignored).
 #'
 #' @return A \link[ggplot2]{ggplot} object that can be customized further.
@@ -406,7 +440,7 @@ print.specr.object <- function(x, ...) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Specification Curve analysis ----
 #' # Setup specifications
 #' specs <- setup(data = example_data,
@@ -434,6 +468,9 @@ print.specr.object <- function(x, ...) {
 #' plot(results, type = "samplesizes")
 #' plot(results, type = "boxplot")
 #'
+#' # Names of the choices on the left, next to their options
+#' plot(results, choice_labels = "left")
+#'
 #'
 #' # Grouped plot
 #' plot(results, group = controls)
@@ -456,7 +493,7 @@ print.specr.object <- function(x, ...) {
 #' plot(results, type = "variance")
 #'
 #' # By providing a specific formula in `lme4::lmer()`-style, we can extract specific choices
-#' # and also include interactions between chocies
+#' # and also include interactions between choices
 #' plot(results,
 #'      type = "variance",
 #'      formula = "estimate ~ 1 + (1|x) + (1|y) + (1|group1) + (1|x:y)")
@@ -486,13 +523,23 @@ plot.specr.object <- function(x,
                               ribbon = FALSE,
                               formula = NULL,
                               print = TRUE,
+                              choice_labels = c("right", "left"),
                               ...){
 
 
   var <- enquo(var)
   group <- enquo(group)
+  type <- match.arg(type, c("default", "curve", "choices", "boxplot", "variance", "samplesizes"))
+  choice_labels <- match.arg(choice_labels)
 
-  # Create specification curve plot
+  # `group` can also be given as a string (as in summary())
+  if (is.character(rlang::quo_get_expr(group))) {
+    group <- rlang::quo(!! rlang::sym(rlang::quo_get_expr(group)))
+  }
+
+  # Create specification curve plot (only if needed, as it requires confidence intervals)
+  if (type %in% c("default", "curve")) {
+
   plot_a <- x$data %>%
     format_results(var = var, group = group, null = null, desc = desc) %>%
     ggplot(aes(x = .data$specifications,
@@ -505,7 +552,7 @@ plot.specr.object <- function(x,
     theme_minimal() +
     scale_color_identity() +
     theme(strip.text = element_blank(),
-          axis.line = element_line("black", size = .5),
+          axis.line = element_line("black", linewidth = .5),
           legend.position = "none",
           panel.spacing = unit(.75, "lines"),
           axis.text = element_text(colour = "black")) +
@@ -515,8 +562,7 @@ plot.specr.object <- function(x,
   if (isTRUE(ci)) {
     plot_a <- plot_a +
       geom_pointrange(alpha = 0.5,
-                      size = .6,
-                      fatten = 1)
+                      size = .15)   # points are size * 4 (= .6), as before
   }
 
   # add ribbon if necessary
@@ -528,13 +574,16 @@ plot.specr.object <- function(x,
                   alpha = 0.25)
   }
 
+  }
 
-  # Create choice panel
+  # Create choice panel (only if needed)
   value <- key <- NULL
+
+  if (type %in% c("default", "choices")) {
 
   plot_b <- x$data %>%
     format_results(var = var, group = group, null = null, desc = desc) %>%
-    tidyr::gather(key, value, choices) %>%
+    tidyr::pivot_longer(all_of(choices), names_to = "key", values_to = "value") %>%
     dplyr::mutate(key = factor(key, levels = choices)) %>%
     ggplot(aes(x = .data$specifications,
                y = value,
@@ -547,12 +596,22 @@ plot.specr.object <- function(x,
     theme_minimal() +
     facet_grid(key~1, scales = "free_y", space = "free_y") +
     theme(
-      axis.line = element_line("black", size = .5),
+      axis.line = element_line("black", linewidth = .5),
       legend.position = "none",
       panel.spacing = unit(.75, "lines"),
       axis.text = element_text(colour = "black"),
       strip.text.x = element_blank()) +
     labs(x = "", y = "")
+
+  # Names of the choices on the left, next to their options
+  if (choice_labels == "left") {
+    plot_b <- plot_b +
+      facet_grid(key~1, scales = "free_y", space = "free_y", switch = "y") +
+      theme(strip.placement = "outside",
+            strip.text.y.left = element_text(angle = 90, face = "bold"))
+  }
+
+  }
 
   if(type == "default"){
 
@@ -581,7 +640,7 @@ plot.specr.object <- function(x,
   if(type == "boxplot") {
 
     plot_c <- x$data %>%
-      tidyr::gather(key, value, all_of(choices)) %>%
+      tidyr::pivot_longer(all_of(choices), names_to = "key", values_to = "value") %>%
       ggplot(aes(x = value,
                  y = !! var,
                  fill = key)) +
@@ -591,7 +650,7 @@ plot.specr.object <- function(x,
       facet_grid(key~1, scales = "free_y", space = "free") +
       theme_minimal() +
       theme(legend.position = "none",
-            axis.line = element_line("black", size = .5),
+            axis.line = element_line("black", linewidth = .5),
             axis.text = element_text(colour = "black"),
             strip.text.x = element_blank()) +
       labs(x = "")
@@ -601,38 +660,44 @@ plot.specr.object <- function(x,
 
   if(type == "variance") {
 
-  grp <- NULL
-
    if(is.null(formula)) {
 
-    if(length(x$x) > 1) {
+    # Only choices with more than one option in the results can be random effects
+    # (counted in the results, so that filtered specifications are respected)
+    n_options <- function(choice) length(unique(x$data[[choice]]))
+
+    if(n_options("x") > 1) {
       var_x = "+ (1|x)"
     } else {
       var_x = ""
     }
 
-    if(length(x$y) > 1) {
+    if(n_options("y") > 1) {
       var_y = "+ (1|y)"
     } else {
       var_y = ""
     }
 
-    if(length(x$model) > 1) {
+    if(n_options("model") > 1) {
       var_model = "+ (1|model)"
     } else {
       var_model = ""
     }
 
-    if(length(x$controls) > 0) {
+    if(n_options("controls") > 1) {
       var_controls = "+ (1|controls)"
     } else {
       var_controls = ""
     }
 
-    if(x$subsets[1] == "none") {
-      var_subsets = ""
-    } else {
+    if(n_options("subsets") > 1) {
       var_subsets = "+ (1|subsets)"
+    } else {
+      var_subsets = ""
+    }
+
+    if(all(c(var_x, var_y, var_model, var_controls, var_subsets) == "")) {
+      stop("The variance decomposition requires at least one analytical choice with more than one option.")
     }
 
     formula <- paste("estimate ~ 1", var_x, var_y, var_model, var_controls, var_subsets)
@@ -641,16 +706,18 @@ plot.specr.object <- function(x,
 
     model <- lme4::lmer(formula = formula, data = x$data)
 
+    # only variances (no covariances of random slopes in custom formulas)
     var <- lme4::VarCorr(model) %>%
       as.data.frame %>%
-      select(grp, vcov)
+      filter(is.na(.data$var2)) %>%
+      select("grp", "vcov")
 
     # sum up all variance components
     sum_var <- sum(var$vcov)
 
     # estimate icc
     var <- var %>%
-      mutate(icc = vcov/sum_var,
+      mutate(icc = .data$vcov/sum_var,
              percent = .data$icc*100)
 
     if(isTRUE(print)) {
@@ -668,7 +735,7 @@ plot.specr.object <- function(x,
       theme(axis.text = element_text(colour = "black"),
             axis.line.y = element_line(colour = "black"),
             axis.line.x = element_line(colour = "black")) +
-      labs(x = "", y = "proportion of variance", fill = "analytical choices")
+      labs(x = "", y = "variance explained (%)")
 
     return(plot_d)
 
@@ -676,16 +743,18 @@ plot.specr.object <- function(x,
 
   if(type == "samplesizes") {
 
+    if (!"fit_nobs" %in% names(x$data)) {
+      stop("The results contain no sample sizes (`fit_nobs`), which are extracted with `fun2` in setup().")
+    }
+
     plot_e <- x$data %>%
       format_results(var = var, group = group, desc = desc) %>%
       ggplot(aes(x = .data$specifications,
                  y = .data$fit_nobs)) +
-      geom_bar(stat = "identity",
-               fill = "grey",
-               size = .2) +
+      geom_col(fill = "grey") +
       theme_minimal() +
       theme(
-        axis.line = element_line("black", size = .5),
+        axis.line = element_line("black", linewidth = .5),
         legend.position = "none",
         panel.spacing = unit(.75, "lines"),
         axis.text = element_text(colour = "black")) +
@@ -698,6 +767,9 @@ plot.specr.object <- function(x,
 
 
 #' Return tibble from specr.object
+#' @param x An object of class "specr.object".
+#' @param ... further arguments passed to [tibble::as_tibble()].
+#' @return A tibble with the results (one row per specification).
 #' @keywords internal
 #' @export
 as_tibble.specr.object <- function(x,...) {
@@ -706,8 +778,248 @@ as_tibble.specr.object <- function(x,...) {
 
 
 #' Return data.frame from specr.object
+#' @param x An object of class "specr.object".
+#' @param ... further arguments passed to [as.data.frame()].
+#' @return A data frame with the results (one row per specification).
 #' @keywords internal
 #' @export
 as.data.frame.specr.object <- function(x, ...) {
   as.data.frame(x$data, ...)
+}
+
+
+
+
+#' Print method for S3 class "specr.infer"
+#' @param x An object of class "specr.infer".
+#' @param ... further arguments passed to or from other methods (currently ignored).
+#' @return Prints technical details and the test statistics (see
+#'   [summary.specr.infer()]) and returns `x` invisibly.
+#' @keywords internal
+#' @export
+print.specr.infer <- function(x, ...) {
+
+  # Short technical summary
+  cat("Inference on the specification curve (resampling under the null)\n")
+  cat("-------------------\n")
+
+  cat("Technical details:\n\n")
+  cat("  Class:                          ", class(x), "-- version:", as.character(utils::packageVersion("specr")), "\n")
+  cat("  Cores used:                     ", x$workers, "\n")
+  cat("  Duration of fitting process:    ", x$time, "\n")
+  cat("  Number of specifications:       ", x$n_specs, "\n")
+  cat("  Number of bootstrap samples:    ", x$n_samples, "\n")
+  if (x$n_failed > 0) {
+    cat("  Failed refits (ignored):        ", x$n_failed, "\n")
+  }
+
+  cat("\nTest statistics (two-sided, see ?summary.specr.infer):\n\n")
+  print(summary(x))
+
+  invisible(x)
+}
+
+#' Summarizing inference on the specification curve
+#'
+#' @description Computes the three test statistics proposed by Simonsohn et al.
+#'    (2020) for the observed specification curve and for each curve under the null
+#'    (resulting from [infer_curve()]), and tests how extreme the observed statistics
+#'    are compared to their distribution under the null.
+#'
+#' @param object A `specr.infer` object, resulting from calling [infer_curve()].
+#' @param direction Direction of the alternative hypothesis. The default
+#'    `"two.sided"` tests for an effect in either direction. Use `"greater"` or
+#'    `"less"` only if the direction of the effect was predicted before the results
+#'    were known.
+#' @param alpha Significance level that is used to count significant
+#'    specifications. Defaults to .05.
+#' @param group Optional character vector with names of analytical choices (e.g.,
+#'    `"y"` or `"subsets"`) to compute the test statistics separately within each
+#'    group of specifications.
+#' @param ... Further arguments passed to or from other methods (currently ignored).
+#'
+#' @details The three test statistics are:
+#'    \describe{
+#'      \item{median}{The median estimate across all specifications.}
+#'      \item{share significant}{The number of specifications with a significant
+#'        estimate (p < `alpha`) in the tested direction: positive for `"greater"`,
+#'        negative for `"less"`, and the more frequent (dominant) direction for
+#'        `"two.sided"`.}
+#'      \item{aggregated z}{Stouffer's Z: each p-value is converted into a z-value
+#'        with the sign of its estimate, and the sum of these z-values is divided by
+#'        the square root of the number of specifications.}
+#'    }
+#'    The p-value of each statistic is the share of curves under the null whose
+#'    statistic is at least as extreme as the observed one, computed as (1 + number
+#'    of curves at least as extreme) / (1 + number of bootstrap samples), so that it
+#'    is never zero. For `"two.sided"`, "at least as extreme" refers to the absolute
+#'    value of the median and of Stouffer's Z, and to the number of significant
+#'    specifications in the dominant direction of each curve. If the extraction
+#'    function did not return p-values, only the median can be tested.
+#'
+#' @return A tibble with one row per test statistic (and group), including the
+#'    observed `estimate`, the 2.5% and 97.5% quantiles of the statistic under the
+#'    null (`null_lower` and `null_upper`), the `p.value`, and the number of
+#'    specifications (`n_specs`).
+#'
+#' @references \itemize{
+#'  \item Simonsohn, U., Simmons, J.P. & Nelson, L.D. (2020). Specification curve analysis. *Nature Human Behaviour, 4*, 1208-1214. https://doi.org/10.1038/s41562-020-0912-z
+#' }
+#'
+#' @seealso [infer_curve()], [plot.specr.infer()]
+#'
+#' @export
+#'
+#' @examples
+#' specs <- setup(data = example_data,
+#'    y = "y1",
+#'    x = c("x1", "x2"),
+#'    model = "lm",
+#'    controls = c("c1", "c2"))
+#'
+#' results <- specr(specs)
+#'
+#' set.seed(42)
+#' inference <- infer_curve(results, specs, n_samples = 200) # better 1,000 or more
+#'
+#' # Two-sided tests (default)
+#' summary(inference)
+#'
+#' # One-sided tests for a predicted positive effect
+#' summary(inference, direction = "greater")
+#'
+#' # Separately for each independent variable
+#' summary(inference, group = "x")
+summary.specr.infer <- function(object,
+                                direction = c("two.sided", "greater", "less"),
+                                alpha = .05,
+                                group = NULL,
+                                ...) {
+
+  direction <- match.arg(direction)
+  observed <- object$observed
+
+  if (is.null(group)) {
+
+    groups <- list(seq_len(nrow(observed)))
+
+  } else {
+
+    if (!all(group %in% names(observed))) {
+      stop("`group` must contain names of analytical choices, e.g. \"x\", \"y\", \"controls\", or \"subsets\".")
+    }
+    groups <- split(seq_len(nrow(observed)),
+                    interaction(as.data.frame(observed[group]), drop = TRUE, lex.order = TRUE))
+  }
+
+  res <- lapply(groups, function(cols) {
+    out <- curve_inference(observed$estimate[cols],
+                           observed$p.value[cols],
+                           object$estimates[, cols, drop = FALSE],
+                           object$p_values[, cols, drop = FALSE],
+                           direction = direction,
+                           alpha = alpha)
+    if (!is.null(group)) {
+      out <- dplyr::bind_cols(observed[rep(cols[1], nrow(out)), group], out)
+    }
+    out
+  })
+
+  dplyr::bind_rows(res)
+}
+
+
+#' Plot specification curve against curves under the null
+#'
+#' @description This function plots the observed specification curve (estimates
+#'   ranked from lowest to highest) on top of the median and the 2.5% and 97.5%
+#'   quantiles of the ranked curves under the null (resulting from [infer_curve()]).
+#'
+#' @param x A `specr.infer` object, resulting from calling [infer_curve()].
+#' @param ... further arguments passed to or from other methods (currently ignored).
+#'
+#' @return A \link[ggplot2]{ggplot} object that can be customized further.
+#'
+#' @seealso [infer_curve()], [summary.specr.infer()]
+#'
+#' @export
+#'
+#' @examples
+#' specs <- setup(data = example_data,
+#'    y = "y1",
+#'    x = c("x1", "x2"),
+#'    model = "lm",
+#'    controls = c("c1", "c2"))
+#'
+#' set.seed(42)
+#' inference <- infer_curve(specr(specs), specs, n_samples = 200) # better 1,000 or more
+#'
+#' # Observed curve against the curves under the null
+#' plot(inference)
+plot.specr.infer <- function(x, ...) {
+
+  rank <- value <- curve <- NULL
+
+  n_specs <- x$n_specs
+
+  # Rank the estimates within each curve under the null
+  sorted <- if (n_specs == 1) {
+    x$estimates
+  } else {
+    t(apply(x$estimates, 1, sort, na.last = TRUE))
+  }
+  quantiles <- apply(sorted, 2, stats::quantile, probs = c(.025, .5, .975), na.rm = TRUE)
+
+  curves <- c("observed", "null: median", "null: 2.5%", "null: 97.5%")
+
+  df <- tibble::tibble(
+    rank = rep(seq_len(n_specs), times = 4),
+    curve = factor(rep(curves, each = n_specs), levels = curves),
+    value = c(sort(x$observed$estimate), quantiles[2, ], quantiles[1, ], quantiles[3, ]))
+
+  ggplot(df, aes(x = rank, y = value, color = curve, linetype = curve)) +
+    geom_line(linewidth = .75) +
+    scale_color_manual(values = c("steelblue", "grey40", "grey40", "grey40")) +
+    scale_linetype_manual(values = c("solid", "dashed", "dotted", "dotted")) +
+    theme_minimal() +
+    theme(
+      axis.line = element_line("black", linewidth = .5),
+      panel.spacing = unit(.75, "lines"),
+      axis.text = element_text(colour = "black")
+    ) +
+    labs(x = "Specifications (ranked)", y = "estimate", color = "", linetype = "")
+
+}
+
+
+#' Return tibble from specr.infer
+#'
+#' Long format with one row per bootstrap sample and specification.
+#' @param x An object of class "specr.infer".
+#' @param ... further arguments (currently ignored).
+#' @return A tibble with the estimates and p-values under the null (one row per
+#'   bootstrap sample and specification).
+#' @keywords internal
+#' @export
+as_tibble.specr.infer <- function(x, ...) {
+
+  keys <- setdiff(names(x$observed), c("estimate", "std.error", "p.value"))
+
+  dplyr::bind_cols(
+    tibble::tibble(sample = rep(seq_len(x$n_samples), each = x$n_specs)),
+    x$observed[rep(seq_len(x$n_specs), times = x$n_samples), keys],
+    tibble::tibble(estimate = as.vector(t(x$estimates)),
+                   p.value = as.vector(t(x$p_values))))
+}
+
+
+#' Return data.frame from specr.infer
+#' @param x An object of class "specr.infer".
+#' @param ... further arguments passed to [as.data.frame()].
+#' @return A data frame with the estimates and p-values under the null (one row
+#'   per bootstrap sample and specification).
+#' @keywords internal
+#' @export
+as.data.frame.specr.infer <- function(x, ...) {
+  as.data.frame(as_tibble(x), ...)
 }

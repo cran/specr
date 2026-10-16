@@ -1,4 +1,8 @@
-## ---- message = F, warning = F------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
+# Evaluate the code only if the suggested packages are installed
+knitr::opts_chunk$set(eval = requireNamespace("tidyverse", quietly = TRUE))
+
+## ----message = F, warning = F-------------------------------------------------
 # Load packages
 library(tidyverse)
 library(specr)
@@ -19,20 +23,20 @@ summary(specs)
 # Running specification curve analysis 
 results <- specr(specs)
 
-## ---- message = F, warnings = F-----------------------------------------------
+## ----message = F, warning = F-------------------------------------------------
 # Overall summary
 summary(results)
 
-## ---- message = F, warnings = F-----------------------------------------------
+## ----message = F, warning = F-------------------------------------------------
 # Specific descriptive analysis of the curve, grouped by x and y
 summary(results, 
         type = "curve", 
         group = c("x", "y"))
 
-## ---- fig.height=8, fig.width=8, message=F, warning = F-----------------------
+## ----fig.height=8, fig.width=8, message=F, warning = F------------------------
 plot(results)
 
-## ---- fig.height=8, fig.width=8, message=F, warning = F-----------------------
+## ----fig.height=8, fig.width=8, message=F, warning = F------------------------
 # Customizing plot
 plot(results, 
      choices = c("x", "y", "controls", # model is not plotted
@@ -48,7 +52,7 @@ results$data <- results$data %>%
 plot(results, 
      choices = c("x", "y", "gender"))
 
-## ---- fig.height=8, fig.width=8, message=F, warning = F-----------------------
+## ----fig.height=8, fig.width=8, message=F, warning = F------------------------
 # Plot specification curve
 p1 <- plot(results, 
            type = "curve",
@@ -72,7 +76,7 @@ plot_grid(p1, p2,
           axis = "rbl",            # align axes
           rel_heights = c(2, 2))   # adjust relative heights
 
-## ---- fig.height=8.5, fig.width=8, message=F, warning = F---------------------
+## ----fig.height=8.5, fig.width=8, message=F, warning = F----------------------
 p3 <- plot(results, type = "samplesizes") 
 
 # Add to overall plot
@@ -82,8 +86,8 @@ plot_grid(p1, p2, p3,
           axis = "rbl",
           rel_heights = c(1.5, 2, 0.8))
 
-## ---- message = F, warning = F------------------------------------------------
-# ALl choices
+## ----message = F, warning = F-------------------------------------------------
+# All choices
 plot(results, 
      type = "boxplot") 
 

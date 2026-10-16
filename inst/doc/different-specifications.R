@@ -1,4 +1,8 @@
-## ---- message = F, warning = F------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
+# Evaluate the code only if the suggested packages are installed
+knitr::opts_chunk$set(eval = requireNamespace("tidyverse", quietly = TRUE))
+
+## ----message = F, warning = F-------------------------------------------------
 library(tidyverse)
 library(specr)
 
@@ -36,7 +40,7 @@ specs %>%
   as_tibble
 
 ## -----------------------------------------------------------------------------
-# Filter out models that are not meaningful (here only keep log_glm, when y == "y4")
+# Filter out models that are not meaningful (here only keep log_glm, when y == "y_dich")
 specs$specs <- specs$specs %>%
   filter(!(model == "log_glm" & y != "y_dich")) %>%
   filter(!(model == "lm" & y == "y_dich"))
@@ -48,18 +52,13 @@ summary(specs, rows = 8)
 results <- specr(specs)
 head(results$data)
 
-## ---- warning = F, message = F------------------------------------------------
+## ----warning = F, message = F, eval = requireNamespace("tidyverse", quietly = TRUE) && requireNamespace("lavaan", quietly = TRUE)----
 # Add mean (one choice)
 data <- data %>%
-  rowwise %>%
-  mutate(x_mean = mean(x1, x2, x3, x4)) %>%
-  ungroup
+  mutate(x_mean = rowMeans(across(c(x1, x2, x3, x4))))
 
 # Add custom function with latent measurement models to pass to "models" (another choice)
 custom_sem <- function(formula, data) {
-  
-  # Make sure lavaan is loaded
-  require(lavaan)
   
   # Add latent measurement as list
   latent <- list(latent_x12 = "latent_x12 =~ x1 + x2")
@@ -71,15 +70,15 @@ custom_sem <- function(formula, data) {
   valid <- purrr::keep(names(latent), ~ stringr::str_detect(formula, .x))
   
   # Create new formula that includes latent measurement models
-  formula <- paste(formula, "\n", paste(latent[valid], collapse = " \n "))
+  formula <- paste(semformula, "\n", paste(latent[valid], collapse = " \n "))
   
   # Pass formula to `sem()`
-  sem(formula, data)
+  lavaan::sem(formula, data)
 }
 
 # Create custom tidy function that extracts the same parameters from different models!
 tidy_new <- function(x) {
-  if(class(x) == "lavaan") {
+  if(inherits(x, "lavaan")) {
     broom::tidy(x, conf.int = TRUE) %>% 
     select(term, estimate, conf.low, conf.high) %>%   # select parameters you want to keep
     filter(grepl(" ~ ", term)) %>%                    # term needs to be adjusted
@@ -122,7 +121,7 @@ specs1 <- setup(data = example_data,
                model = "lm",
                controls = c("c1", "c2", "c3", "c4"))  # simply providing a vector of control variables
 
-# Setup secifications that include only no covariates, each individually, and all together
+# Setup specifications that include only no covariates, each individually, and all together
 specs2 <- setup(data = example_data,
                x = c("x1", "x2"),
                y = c("y1", "y2"),
@@ -157,7 +156,7 @@ specs4 <- setup(data = example_data,
 specs4$specs[1:6,]
 
 ## -----------------------------------------------------------------------------
-# Adding a covariate that is also a independent or dependent variable
+# Adding a covariate that is also an independent or dependent variable
 specs5 <- setup(data = example_data,
                x = c("x1", "x2"),
                y = c("y1", "y2"),
@@ -224,4 +223,84 @@ summary(specs, rows = 7)
 # Run analysis and plot results
 results <- specr(specs)
 plot(results, choices = c("x", "y", "subsets"))
+
+## -----------------------------------------------------------------------------
+# Simulate weights
+set.seed(42)
+data_weights <- example_data %>%
+  mutate(weight = runif(n(), min = .5, max = 1.5))
+
+# Custom model function
+lm_weighted <- function(formula, data) {
+  lm(formula, data = data, weights = weight)
+}
+
+# Setup specs
+specs <- setup(data = data_weights,
+               x = c("x1", "x2"),
+               y = "y1",
+               model = list(unweighted = lm, weighted = lm_weighted),
+               controls = c("c1", "c2"))
+
+# Run analysis and plot results
+results <- specr(specs)
+plot(results, choices = c("x", "model", "controls"))
+
+## ----eval = requireNamespace("tidyverse", quietly = TRUE) && requireNamespace("survival", quietly = TRUE)----
+library(survival)
+
+# Deaths in the data set `colon` from the package survival
+colon_death <- colon %>%
+  filter(etype == 2)
+
+# Custom model function
+cox_model <- function(formula, data) {
+  coxph(as.formula(formula), data = data)
+}
+
+# Setup specs
+specs <- setup(data = colon_death,
+               x = c("age", "nodes"),
+               y = "Surv(time, status)",
+               model = list(cox = cox_model),
+               controls = c("sex", "obstruct", "perfor"),
+               fun1 = function(x) broom::tidy(x, exponentiate = TRUE, conf.int = TRUE))
+
+# Run analysis and plot results (hazard ratios)
+results <- specr(specs)
+plot(results, null = 1, choices = c("x", "controls"))
+
+## ----eval = requireNamespace("fixest", quietly = TRUE)------------------------
+# # Custom model function (fixed effects for group3 and heteroskedasticity-robust
+# # standard errors; with real panel data, they can be clustered e.g. via `cluster = ~id`)
+# feols_fe <- function(formula, data) {
+#   fixest::feols(as.formula(paste(formula, "| group3")),
+#                 vcov = "hetero",
+#                 data = data)
+# }
+# 
+# # Setup specs
+# specs <- setup(data = example_data,
+#                x = c("x1", "x2"),
+#                y = c("y1", "y2"),
+#                model = list(ols = lm, fixed_effects = feols_fe),
+#                controls = c("c1", "c2"),
+#                fun2 = NULL)  # different fit indices for lm and feols
+# 
+# # Run analysis and plot results
+# results <- specr(specs)
+# plot(results, choices = c("x", "y", "model", "controls"))
+
+## ----eval = FALSE-------------------------------------------------------------
+# specs <- setup(data = example_data,
+#                x = c("x1", "x2"),
+#                y = c("y1", "y2"),
+#                model = list(lmer = lmerTest::lmer),
+#                controls = "c1",
+#                add_to_formula = "(1|group3)",
+#                fun1 = function(x) broom.mixed::tidy(x, conf.int = TRUE),
+#                fun2 = NULL)
+# 
+# results <- specr(specs)
+# plot(results)
 

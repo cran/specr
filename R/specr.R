@@ -11,11 +11,11 @@
 #'    \code{as_tibble(setup(...))}).
 #' @param data If x is not an object of "specr.setup" and simply a tibble, you
 #'    need to provide the data set that should be used. Defaults to NULL as it is
-#'    assumend that most users will create an object of class "specr.setup" that they'll
+#'    assumed that most users will create an object of class "specr.setup" that they'll
 #'    pass to `specr()`.
 #' @param ... Further arguments that can be passed to \code{future_pmap}. This only becomes
-#'    important if parallelization is used. For example, if a custom model function is used
-#'    this involves passing `furrr_options` passing to the argument `.options`.
+#'    important if parallelization is used (they are ignored if the specifications are
+#'    fitted sequentially). For example, `furrr_options` can be passed to the argument `.options`.
 #'    When a plan for parallelization is set, one can also set `.progress = TRUE`
 #'    to print a progress bar during the fitting process. See details for more information
 #'    on parallelization.
@@ -24,17 +24,17 @@
 #'   with all specifications their respective results along with many other useful
 #'   information about the model. Parameters are extracted via the function passed
 #'   to \code{setup}. By default this is \code{broom::tidy()} and the function
-#'   \code{broom::glance()}).Several other aspects and information are included in
+#'   \code{broom::glance()}. Several other aspects and information are included in
 #'   the resulting class (e.g., number of specifications, time elapsed, subsets
 #'   included in the analyses). Use \code{methods(class = "specr.object")} for
 #'   an overview on available methods.
 #'
 #' @details Empirical results are often contingent on analytical decisions that
 #'    are equally defensible, often arbitrary, and motivated by different reasons.
-#'    This decisions may introduce bias or at least variability. To this end,
+#'    These decisions may introduce bias or at least variability. To this end,
 #'    specification curve analyses  (Simonsohn et al., 2020) or multiverse
 #'    analyses (Steegen et al., 2016) refer to identifying the set of
-#'    theoretically justified, statistically valid (and potentially also non-redundant
+#'    theoretically justified, statistically valid (and potentially also non-redundant)
 #'    specifications, fitting the "multiverse" of models represented by these
 #'    specifications and extract relevant parameters often to display the results
 #'    graphically as a so-called specification curve. This allows readers to
@@ -43,7 +43,7 @@
 #'
 #'    \bold{Use of this function}
 #'
-#'    A general overview is provided in the vignettes \code{vignette("specr")}.
+#'    A general overview is provided in the vignette \code{vignette("getting-started")}.
 #'    Generally, you create relevant specification using the function \code{setup()}.
 #'    You then pass the resulting object of a class \code{specr.setup} to the
 #'    present function \code{specr()} to run the specification curve analysis.
@@ -60,7 +60,7 @@
 #'    and the number of specifications is large, it can make sense to parallelize
 #'    these operations. One simply has to load the package `furrr` (which
 #'    in turn, builds on `future`) up front. Then parallelizing the fitting process
-#'    works as specified in the package description of `furr`/`future` by setting a
+#'    works as specified in the package description of `furrr`/`future` by setting a
 #'    "plan" before running `specr` such as:
 #'
 #'    `plan(multisession, workers = 4)`
@@ -85,7 +85,7 @@
 #'
 #'
 #' @references \itemize{
-#'  \item Simonsohn, U., Simmons, J.P. & Nelson, L.D. (2020). Specification curve analysis. *Nature Human Behaviour, 4*, 1208–1214. https://doi.org/10.1038/s41562-020-0912-z
+#'  \item Simonsohn, U., Simmons, J.P. & Nelson, L.D. (2020). Specification curve analysis. *Nature Human Behaviour, 4*, 1208-1214. https://doi.org/10.1038/s41562-020-0912-z
 #'  \item Steegen, S., Tuerlinckx, F., Gelman, A., & Vanpaemel, W. (2016). Increasing Transparency Through a Multiverse Analysis. *Perspectives on Psychological Science, 11*(5), 702-712. https://doi.org/10.1177/1745691616658637
 #' }
 #' @export
@@ -136,19 +136,22 @@ specr <- function(x,
 
   . <- out <- term <- y <- NULL
 
-  if(!inherits(x, c("specr.setup", "tbl_df", "tbl", "data.frame"))) {
+  if(!inherits(x, c("specr.setup", "data.frame"))) {
     stop("You need to provide an object of class 'specr.setup' (or a tibble or data frame of the specification setup).\n  Use 'setup()' to create such a specification setup.")
   }
 
-  if(isTRUE(any(c("tbl_df", "tbl", "data.frame") %in% class(x))) & is.null(data)) {
+  if(!inherits(x, "specr.setup") && is.null(data)) {
     stop("You provided a tibble or data.frame with all the specifications. In that case, you also need to provide the data set that should be used for the analyses.")
   }
 
-  # Collect data and subsets
-  if("specr.setup" %in% class(x)) {
+  if(inherits(x, "specr.setup") && !is.null(data)) {
+    warning("`data` is ignored, because the data set is taken from the specification setup.", call. = FALSE)
+  }
+
+  # Collect data and specifications
+  if(inherits(x, "specr.setup")) {
 
     data <- x$data
-    subsets <- x$subsets
     specs <- x$specs
 
   } else {
@@ -157,67 +160,44 @@ specr <- function(x,
 
   }
 
+  # Subset columns are the factor columns (see setup()) that refer to variables
+  # in the data
+  sub_cols <- names(specs)[vapply(specs, is.factor, logical(1)) & names(specs) %in% names(data)]
+
+  # Number the specifications to detect those that return no parameter for x
+  specs$.spec_id <- seq_len(nrow(specs))
+
+  # Fit one specification (a row of the specification grid). The helper is bound
+  # locally so that parallel workers receive it together with this function
+  subset_mask <- spec_subset_mask
+
+  fit_spec <- function(...) {
+
+    # Initialize specs as list
+    l = list(...)
+
+    # Create relevant subset
+    s <- subset_mask(l, data, sub_cols)
+
+    do.call(
+      what = l$model_function,
+      args = list(
+        formula = l$formula,
+        data = data[s,])
+    )
+  }
+
   # Differentiate between 1 and >1 workers
   if(methods::is(plan(), "sequential")) {
 
     res <- specs %>%
-      dplyr::mutate(out = pmap(., function(...) {
-
-        # Initialize specs as list
-        l = list(...)
-
-        # identify the grouping columns
-        group_i <- which(sapply(l, is.factor))
-        s <- rep(TRUE, nrow(data))
-
-        # Create relevant subsets
-        for (i in group_i) {
-          column <- names(l)[i]
-          value <- l[[i]]
-          if (is.na(value)) next
-          s <- s & data[[column]] == value
-        }
-
-        # Iterate across specifications
-        do.call(
-          what = l$model_function,
-          args = list(
-            formula = l$formula,
-            data = data[s,])
-        )
-      })) %>%
+      dplyr::mutate(out = pmap(., fit_spec)) %>%
       tidyr::unnest(out)
 
   } else {
 
     res <- specs %>%
-      dplyr::mutate(out = future_pmap(., function(...) {
-
-        # Initialize specs as list
-        l = list(...)
-
-        # identify the grouping columns
-        group_i <- which(sapply(l, is.factor))
-        s <- rep(TRUE, nrow(data))
-
-        # Create relevant subsets
-        for (i in group_i) {
-          column <- names(l)[i]
-          value <- l[[i]]
-          if (is.na(value)) next
-          s <- s & data[[column]] == value
-        }
-
-        # Iterate across specifications
-        do.call(
-          what = l$model_function,
-          args = list(
-            formula = l$formula,
-            data = data[s,])
-        )
-      },
-      ...),
-      ) %>%
+      dplyr::mutate(out = future_pmap(., fit_spec, ...)) %>%
       tidyr::unnest(out)
 
   }
@@ -231,13 +211,22 @@ specr <- function(x,
       dplyr::filter(term == x)
   }
 
+  # Warn about specifications that did not return a parameter for x
+  n_dropped <- nrow(specs) - length(unique(res$.spec_id))
+  if (n_dropped > 0) {
+    warning(n_dropped, " of ", nrow(specs), " specification(s) returned no estimate for the independent variable ",
+            "(no term equal to `x`) and were dropped. This happens, for example, if `x` is a factor or ",
+            "character variable (with terms such as 'xB'). Please recode such variables as numeric ",
+            "(e.g., dummy) variables.", call. = FALSE)
+  }
+  res$.spec_id <- NULL
+
   # Compute time
-  end <- Sys.time()
-  time <- end-start
+  time <- difftime(Sys.time(), start, units = "secs")
   time <- paste(round(as.numeric(time), 3), "sec elapsed")
 
-  # Create S2 class
-  if(class(x)[1] == "specr.setup") {
+  # Create S3 class
+  if(inherits(x, "specr.setup")) {
 
   # Create S3 class
   output <- list(data = res,
@@ -245,7 +234,7 @@ specr <- function(x,
                  x = x$x,
                  y = x$y,
                  model = x$model,
-                 controls = x$model,
+                 controls = x$controls,
                  subsets = x$subsets,
                  workers = nbrOfWorkers(),
                  time = time)

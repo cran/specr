@@ -10,21 +10,29 @@
 #'    all specifications.
 #'
 #' @param data The data set that should be used for the analysis
-#' @param y A vector denoting the dependent variables
-#' @param x A vector denoting independent variables
-#' @param model A vector denoting the model(s) that should be estimated.
+#' @param y A character vector denoting the dependent variables
+#' @param x A character vector denoting the independent variables (which should be
+#'    numeric variables, see details)
+#' @param model A character vector with the names of the model functions that
+#'    should be estimated (e.g., `"lm"` or the name of a custom function), or a
+#'    named list of functions (e.g., `list(ols = lm, robust = MASS::rlm)`), in
+#'    which case the names are used as labels for the models. Any function that
+#'    accepts the arguments `formula` and `data` can be used, including custom
+#'    wrappers around other model functions (e.g., for survival models, fixed
+#'    effects models, or weighted regressions; see
+#'    `vignette("different-specifications")`).
 #' @param subsets Specification of potential subsets/groups as list.  There are two ways
 #'    in which these can be specified that both start from the assumption that the
 #'    "grouping" variable is in the data set. The simplest way is to provide a named
 #'    vector within the list, whose name is the variable that should be used for
 #'    subsetting and whose values are the values that reflect the subsets (e.g.,
-#'    `list(group2 = c("female", "male")`). In this case, the specifications will
-#'    includes "all", "only female" and "only male". Alternatively, you can also use
+#'    `list(group2 = c("female", "male"))`). In this case, the specifications will
+#'    include "all", "only female" and "only male". Alternatively, you can also use
 #'    the `unique` function to extract that vector directly from the data set
-#'    (e.g., `list(group2 = unique(example_data$group2`). Both approaches lead to the
+#'    (e.g., `list(group2 = unique(example_data$group2))`). Both approaches lead to the
 #'    same result. The former, however, has the advantages that one can also remove some of the
-#'    subgroups (e.g. `list(group2 = c("female")`). In this case, the specifications
-#'    will include "all" (no subset) and "only females". See examples for more details.
+#'    subgroups (e.g. `list(group2 = c("female"))`). In this case, the specifications
+#'    will include "all" (no subset) and "only females". See examples for more details. Missing values (NA) among the subset values are ignored.
 #' @param controls A vector of the control variables that should be included.
 #'    Defaults to NULL.
 #' @param add_to_formula A string specifying aspects that should always be
@@ -52,10 +60,10 @@
 #'
 #' @details Empirical results are often contingent on analytical decisions that
 #'    are equally defensible, often arbitrary, and motivated by different reasons.
-#'    This decisions may introduce bias or at least variability. To this end,
+#'    These decisions may introduce bias or at least variability. To this end,
 #'    specification curve analyses  (Simonsohn et al., 2020) or multiverse
 #'    analyses (Steegen et al., 2016) refer to identifying the set of
-#'    theoretically justified, statistically valid (and potentially also non-redundant
+#'    theoretically justified, statistically valid (and potentially also non-redundant)
 #'    specifications, fitting the "multiverse" of models represented by these
 #'    specifications and extract relevant parameters often to display the results
 #'    graphically as a so-called specification curve. This allows readers to
@@ -64,7 +72,7 @@
 #'
 #'    \bold{Use of this function}
 #'
-#'    A general overview is provided in the vignettes \code{vignette("specr")}.
+#'    A general overview is provided in the vignette \code{vignette("getting-started")}.
 #'    It is assumed that you want to estimate the relationship between two variables
 #'    (\code{x} and \code{y}). What varies may be what variables should be used for
 #'    \code{x} and \code{y}, what model should be used to estimate the relationship,
@@ -75,12 +83,16 @@
 #'    Afterwards you pass the resulting object of a class \code{specr.setup} to the
 #'    function \code{specr()} to run the specification curve analysis.
 #'
+#'    As \code{specr()} extracts the estimate whose term equals \code{x}, the
+#'    independent variables should be numeric. For factor or character variables,
+#'    models return terms such as "xB", so recode them as (dummy) variables instead.
+#'
 #'    Note, the resulting class of \code{specr.setup} allows to use generic functions.
 #'    Use \code{methods(class = "specr.setup")} for an overview on available methods and
 #'    e.g., \code{?summary.specr.setup} to view the dedicated help page.
 #'
 #' @references \itemize{
-#'  \item Simonsohn, U., Simmons, J.P. & Nelson, L.D. (2020). Specification curve analysis. *Nature Human Behaviour, 4*, 1208–1214. https://doi.org/10.1038/s41562-020-0912-z
+#'  \item Simonsohn, U., Simmons, J.P. & Nelson, L.D. (2020). Specification curve analysis. *Nature Human Behaviour, 4*, 1208-1214. https://doi.org/10.1038/s41562-020-0912-z
 #'  \item Steegen, S., Tuerlinckx, F., Gelman, A., & Vanpaemel, W. (2016). Increasing Transparency Through a Multiverse Analysis. *Perspectives on Psychological Science, 11*(5), 702-712. https://doi.org/10.1177/1745691616658637
 #' }
 #' @export
@@ -142,6 +154,26 @@
 #'
 #' # Check specifications
 #' summary(specs)
+#'
+#'
+#' ## Example 4 ----
+#' # Model functions as a named list (the names are used as labels)
+#'
+#' # Custom function, e.g. a weighted regression (any function with the
+#' # arguments `formula` and `data` works, e.g. also wrappers around
+#' # fixest::feols() or survival::coxph(), see vignette("different-specifications"))
+#' weighted_lm <- function(formula, data) {
+#'   lm(formula, data = data, weights = rep(1:2, length.out = nrow(data)))
+#' }
+#'
+#' specs <- setup(data = example_data,
+#'    x = c("x1", "x2"),
+#'    y = "y1",
+#'    model = list(ols = lm, weighted = weighted_lm),
+#'    controls = "c1")
+#'
+#' # Check specifications
+#' summary(specs)
 setup <- function(data,
                   x,
                   y,
@@ -153,7 +185,7 @@ setup <- function(data,
                   fun2 = function(x) broom::glance(x),
                   simplify = FALSE) {
 
-  . <- group_var <- check <- check2 <- NULL
+  . <- group_var <- NULL
 
   if (rlang::is_missing(data)) {
     stop("You must provide the data set that should be used in the analyses.")
@@ -171,13 +203,69 @@ setup <- function(data,
     stop("You must name at least one model function (e.g., 'lm').")
   }
 
+  # Models can be given as names of functions, or as a named list of functions
+  # (whose names are then used as labels)
+  if (is.list(model)) {
+    if (is.null(names(model)) || any(names(model) == "") ||
+        !all(purrr::map_lgl(model, is.function))) {
+      stop("If `model` is a list, it must be a named list of functions, e.g. `list(ols = lm)`.")
+    }
+    model_functions <- model
+    model <- names(model)
+  } else if (is.character(model)) {
+    model_functions <- stats::setNames(as.list(model), model)
+  } else {
+    stop("`model` must be a character vector with the name(s) of the model function(s), e.g. \"lm\", or a named list of functions, e.g. `list(ols = lm)`.")
+  }
+
+  # Independent variables must be numeric, as only the estimate whose term
+  # equals x is extracted (factors would result in terms such as "xB")
+  x_in_data <- x[x %in% names(data)]
+  non_numeric <- x_in_data[!purrr::map_lgl(x_in_data, function(v) is.numeric(data[[v]]))]
+  if (length(non_numeric) > 0) {
+    warning("The independent variable(s) ", paste(non_numeric, collapse = ", "), " are not numeric. ",
+            "specr() extracts the estimate whose term equals `x`, but for factor, character, or logical ",
+            "variables, models return terms such as '", non_numeric[1], "B' instead, so that no estimates ",
+            "would be extracted. Please recode such variables as numeric (e.g., dummy) variables.",
+            call. = FALSE)
+  }
+
   if (any(duplicated(x))| any(duplicated(y)) | any(duplicated(model)) | any(duplicated(controls))) {
     stop("Duplicate values in x, y, model, and controls are not allowed.")
   }
 
-  if (!is.null(subsets) & !inherits(subsets, "list")) {
+  if (!is.null(subsets) && !inherits(subsets, "list")) {
     stop("Subsets must be an object of class 'list'")
   }
+
+  if (!is.null(subsets)) {
+
+    if (is.null(names(subsets)) || any(names(subsets) == "") || any(duplicated(names(subsets)))) {
+      stop("Each element of `subsets` must be named after a grouping variable in the data, and names must be unique (e.g., `list(group2 = c(\"female\", \"male\"))`).")
+    }
+
+    reserved <- c("x", "y", "model", "controls", "subsets", "formula", "model_function")
+    if (any(names(subsets) %in% reserved)) {
+      stop("Subset variables cannot be named ", paste0("'", reserved, "'", collapse = ", "), ".")
+    }
+
+    if (!all(names(subsets) %in% names(data))) {
+      stop("The following subset variable(s) are not in the data: ",
+           paste(setdiff(names(subsets), names(data)), collapse = ", "), ".")
+    }
+
+    # NA is used internally for "all" (no subsetting)
+    subsets <- purrr::map(subsets, function(x) x[!is.na(x)])
+
+    if (any(purrr::map_lgl(subsets, function(x) any(duplicated(x))))) {
+      stop("Duplicate values within `subsets` are not allowed.")
+    }
+  }
+
+  # The default extraction functions should not keep the environment of this
+  # function (and thus a copy of the data) alive in every specification
+  if (missing(fun1)) environment(fun1) <- asNamespace("specr")
+  if (missing(fun2)) environment(fun2) <- asNamespace("specr")
 
   if(isTRUE(simplify)) {
     controls <- expand_covariate_simple(controls)
@@ -214,14 +302,13 @@ setup <- function(data,
 
 }
 
-  # Filter out non-meaningful specs (e.g., where control and independent are the same)
+  # Filter out non-meaningful specs (e.g., where independent and dependent variable,
+  # or a control and the independent or dependent variable, are the same). Controls
+  # are matched exactly, so that e.g. x1 does not exclude a control x10
   grid <- grid %>%
+    filter(x != y) %>%
     rowwise %>%
-    mutate(check = grepl(x, controls)) %>%
-    mutate(check2 = grepl(y, controls)) %>%
-    filter(isFALSE(check)) %>%
-    filter(isFALSE(check2)) %>%
-    select(-check, -check2) %>%
+    filter(!any(c(x, y) %in% strsplit(controls, " + ", fixed = TRUE)[[1]])) %>%
     ungroup
 
 
@@ -241,13 +328,13 @@ setup <- function(data,
   # Transform model string into actual function that also extracts parameters
   grid <- grid %>%
     mutate(model_function = purrr::map(model,
-                                       function(x) tidy_model(x,
+                                       function(x) tidy_model(model_functions[[x]],
                                                               fun1 = fun1,
                                                               fun2 = fun2)))
 
   pos_formula <- which(names(grid) == "formula")
   subsets_names <- grid[5:pos_formula] %>%
-    select(-formula) %>%
+    select(-"formula") %>%
     names
 
   if(subsets_names[1] != "group_var") {
@@ -255,11 +342,9 @@ setup <- function(data,
     # Create subset variable (combination of group variables)
      grid <- grid %>%
        mutate(dplyr::across(all_of(subsets_names), ~ as.character(.))) %>%
-       tidyr::unite(subsets, all_of(subsets_names), sep = " & ", remove = FALSE) %>%
+       tidyr::unite(subsets, all_of(subsets_names), sep = " & ", remove = FALSE, na.rm = TRUE) %>%
        mutate(across(all_of(subsets_names),~ as.factor(.)),
-              subsets = stringr::str_remove_all(subsets, "NA & "),
-              subsets = stringr::str_remove_all(subsets, " & NA"),
-              subsets = ifelse(subsets == "NA", "all", subsets))
+              subsets = ifelse(subsets == "", "all", subsets))
 
   } else {
 

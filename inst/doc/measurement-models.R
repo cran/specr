@@ -4,16 +4,18 @@ knitr::opts_chunk$set(
   comment = "#>",
   #fig.path = "man/figures/README-",
   out.width = "100%",
-  fig.retina = 2
+  fig.retina = 2,
+  # Evaluate the code only if the suggested packages are installed
+  eval = requireNamespace("tidyverse", quietly = TRUE) && requireNamespace("lavaan", quietly = TRUE)
 )
 
-## ---- message=F, warning = F--------------------------------------------------
+## ----message=F, warning = F---------------------------------------------------
 # Load packages
 library(tidyverse)
 library(specr)
 library(lavaan)
 
-## ---- message=F, warning = F--------------------------------------------------
+## ----message=F, warning = F---------------------------------------------------
 # Load data and recode
 d <- HolzingerSwineford1939 %>% 
   mutate(sex = as.character(sex),
@@ -39,8 +41,6 @@ broom::tidy(fit)
 ## -----------------------------------------------------------------------------
 sem_custom <- function(formula, data) {
   
-  require(lavaan)
-  
   # 1) Define latent variables as a named list
   latent <- list(visual =  "visual  =~ x1 + x2 + x3",
                  textual = "textual =~ x4 + x5 + x6",
@@ -59,19 +59,18 @@ sem_custom <- function(formula, data) {
                          collapse = " \n "))
   
   # 5) Run SEM with sem function
-  sem(formula, data)
+  lavaan::sem(formula, data)
 }
 
 # In short:
 sem_custom <- function(formula, data) {
-  require(lavaan)
   latent <- list(visual =  "visual  =~ x1 + x2 + x3",
                  textual = "textual =~ x4 + x5 + x6",
                  speed =   "speed   =~ x7 + x8 + x9")
   formula <- stringr::str_remove_all(formula, "\\+ 1")
   valid <- purrr::keep(names(latent), ~ stringr::str_detect(formula, .x))
   formula <- paste(formula, "\n", paste(latent[valid], collapse = " \n "))
-  sem(formula, data)
+  lavaan::sem(formula, data)
 }
 
 
@@ -86,13 +85,13 @@ specs <- setup(data = d,
                               school = unique(d$school)))
 
 # Summarize specifications
-summary(specs, row = 10)
+summary(specs, rows = 10)
 
-## ---- fig.height=8, fig.width=8, message=F, warning = F-----------------------
+## ----fig.height=8, fig.width=8, message=F, warning = F------------------------
 results <- specr(specs)
 plot(results, choices = c("y", "controls", "model", "subsets"))
 
-## ---- fig.height=9, fig.width=9, message=F, warning = F-----------------------
+## ----fig.height=9, fig.width=9, message=F, warning = F------------------------
 # Create curve with standardized coefficients
 plot_a <- plot(results, "curve") + 
     geom_point(aes(y = std.all, alpha = .1, size = 1.25)) +
@@ -109,7 +108,7 @@ plot_grid(plot_a, plot_b,
           axis = "rbl",            
           rel_heights = c(1.5, 2))  
 
-## ---- fig.height=8, fig.width=8, message=F, warning = F-----------------------
+## ----fig.height=8, fig.width=8, message=F, warning = F------------------------
 # Looking at included fit indices
 results %>%
   as_tibble %>%
